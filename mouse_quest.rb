@@ -8,7 +8,24 @@
 	-Character Spellbook is an array of spell names
 	-Location equals an array containing an X and Y axis value
 	-Money equals the treasure they've accrued
+	-XP is the amount of experience they've acquired
+	-Health 
+	-Mana
+	-Level is a floored version of XP rounded to the nearest hundred
 
+
+========= CLASSES =========
+
+*** Monster Class ***
+	
+	-Monster name
+	-Level 
+	-Treasure
+	-XP is the amount of experience they are worth
+	-Health 
+	-Attack Value
+	-Attack flavor text
+	-Defend Value
 
 
 ========= DATABASES =========
@@ -101,8 +118,38 @@
 
 *** New Location Method ***
 
+	-IF the Current Character's Location equals the coordinates of a special location,
+	 run that location's method.
+	-ELSIF the Current Character's x axis absolute value is greater than 5, PUTS the
+	 description for the Tanglewood Swamp key of the Forest Map Hash and call the 
+	 method listed in the hash
+	-ELSE PUTS the description for the location Forest Map Hash whose key matches the
+	 Current Character's Location and call the method listed in the hash 
 
+*** Random Monster Method ***
 
+	-Takes an argument of an INTEGER between 1 and 3, set that equal to a variable Level
+	-Multiply the Level a RANDOM number between 1 and 3
+		-IF the product is less than 3, call the Move Method
+		-ELSE set a RANDOM number between one and the Monster Hash length
+		-Use that number to select a monster from the Monster Hash
+		-Create new instance of the Monster class with information from Monster Hash and
+		 Level variable 
+		-Set that new Monster equal to Opponent
+		-PUTS a message saying that a such and such level monster has appeared
+		-Run the Combat Method
+
+*** Combat Method ***
+
+	-Takes an argument of Opponent
+	-UNTIL victory = TRUE
+		-PUTS would you like to cast a spell or run away
+		-GETS answer
+		-IF run away, generate RANDOM number between 1 and 10
+			-IF greater than 5, call Move Method
+			-ELSE PUTS "The monster catches you"
+		-ELSE if cast a spell, PUTS 'What spell would you like to cast'
+		-PUTS a list of available spells from the Character Spellbook array
 
 
 
@@ -111,6 +158,33 @@
 
 *** Spell Hash ***
 
+	-Key is the spell name
+	-Values are an array containing:
+		-Flavor text for casting the spell
+		-A method call
 
+*** Forest Map Hash ***
 	
+ -Most keys are a two digit array of x and y axis values
+ -The values are an array containing: 
+ 		-A description of the location
+ 		-A method call, usually a Random Monster Method or a Move Method 
+ -One key is a string "Tanglewood Swamp"
+  	-The values are an array containing: 
+ 		-A description of the location
+ 		-A Random Monster Method 
+
+
+*** Monster Hash ***
+
+	-Keys should be integers from 1 onward
+	-The values are an array containing: 
+		-Name
+		-Treasure
+		-XP 
+		-Health 
+		-Attack Value
+		-Attack flavor text
+		-Defend Value
+
 =end
