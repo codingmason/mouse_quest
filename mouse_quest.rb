@@ -9,9 +9,9 @@
 	-Location equals an array containing an X and Y axis value
 	-Money equals the treasure they've accrued
 	-XP is the amount of experience they've acquired
-	-Health 
-	-Mana
+	-Health is 9 plus the Level 
 	-Level is a floored version of XP rounded to the nearest hundred
+	-Old Level
 
 
 ========= CLASSES =========
@@ -32,9 +32,11 @@
 
 *** Saved Character Database ***
 
-
-
-
+	-Character name
+	-FOREIGN KEY matching the Spellbook Database
+	-Money 
+	-XP
+	-Level
 
 *** Spellbook Database ***
 
@@ -68,6 +70,7 @@
 	-Assign character name and spell to Current Character class variables
 	-Query SQLite to to add Character information to the Saved Characters database
 	-Query SQLite to to add spell information to the Spellbook database
+	-Run Cheesewright Inn Method
 
 *** Load Character Method ***
 
@@ -80,6 +83,7 @@
 			 and Saved Inventory databases
 			-ELSE PUTS 'That character does not exist'
 	-PUTS a summary of the character, spellbook, and inventory.
+	-Run Cheesewright Inn Method
 
 
 *** Cheesewright Inn Method ***
@@ -93,20 +97,38 @@
 			-ELSE, PUTS an 'I didn't understand that' message. Correct input is FALSE
 
 *** Save Method ***
-
+	
 	-Query SQLite and push Current Character attributes to Saved Character Database 
 	 with matching name
 	-Query SQLite and push Character Spellbook attributes to Spellbook Database with 
 	 matching name
 	-PUTS question if they would like to continue or not
 		-IF yes, PUTS description of waking up at the inn and have Sam wish them good
-		luck on their quest. Run the Move Method 
+		luck on their quest. Run the Action Method 
 		-ELSE, PUTS a goodbye message and end program
 
 
+*** Action Method ***
+
+	-PUTS would you like to move or cast a spell
+	-GETS answer
+		-IF answer is move, run Move Method
+		-ELSIF answer is spell, run the Cast Spell Method
+		-ELSE PUTS that was not a valid input
+
+*** Cast Spell Method ***
+
+	-PUTS list of spell names in the Character Spellbook
+	-PUTS a message asking for a selection
+	-GETS answer. Use answer as key for Master Spellbook Hash
+		-IF the value of the hash entry is an Attack method PUTS there's no one to fight
+		-ELSE run the value of the hash entry
+	-RUN Move method
+
 *** Move Method ***
+
 	-UNTIL correct input is TRUE
-		-PUTS would you like to move North, East, South, or West
+		-PUTS would you like to move North, East, South, West
 		-GETS answer
 			-IF North add 1 to Current Character's Location y axis. Correct input TRUE 
 			-ELSIF East add 1 to Current Character's Location x axis. Correct input TRUE  	
@@ -126,11 +148,12 @@
 	-ELSE PUTS the description for the location Forest Map Hash whose key matches the
 	 Current Character's Location and call the method listed in the hash 
 
+
 *** Random Monster Method ***
 
 	-Takes an argument of an INTEGER between 1 and 3, set that equal to a variable Level
 	-Multiply the Level a RANDOM number between 1 and 3
-		-IF the product is less than 3, call the Move Method
+		-IF the product is less than 3, call the Action Method
 		-ELSE set a RANDOM number between one and the Monster Hash length
 		-Use that number to select a monster from the Monster Hash
 		-Create new instance of the Monster class with information from Monster Hash and
@@ -145,30 +168,86 @@
 	-UNTIL victory = TRUE
 		-PUTS would you like to cast a spell or run away
 		-GETS answer
-		-IF run away, generate RANDOM number between 1 and 10
-			-IF greater than 5, call Move Method
-			-ELSE PUTS "The monster catches you"
-		-ELSE if cast a spell, PUTS 'What spell would you like to cast'
+			-IF run away, generate RANDOM number between 1 and 10
+				-IF greater than 5, call Action Method
+				-ELSE PUTS "The monster catches you"
+			-ELSE if cast a spell, PUTS 'What spell would you like to cast'
 		-PUTS a list of available spells from the Character Spellbook array
+		-GETS the choice of Spell
+		-Use the spell name to grab the values from the matching spell in the 
+		 Spell Hash. 
+			-PUTS the spell flavor text from the Spell Hash
+			-Call the method from the Spell Hash
+		-IF Opponent health is =< zero, victory = TRUE
+		-ELSE 
+			-PUTS the attack flavor text from the Monster Hash 
+			-Call the Attack method with value from the Monster Hash
+		-IF Current Character health is =< 0,  victory = TRUE
+		-ELSE victory = FALSE
+	-Call the Combat Resolution Method
 
+*** Combat Resolution Method ***	
+
+	-IF Current Character health is =< 0
+		-PUTS a message saying your character died
+		-ABORT
+	-ELSE
+		-PUTS a message that the opponent died
+		-Set a treasure variable equal to the opponent treasure * opponent level
+		-Set an XP variable equal to the opponent XP * opponent level
+		-PUTS a message saying you gained x amount of treasure and XP
+		-Add treasure and XP to Current Character's treasure and XP
+		-Compare Current Character's Level with Current Character's Old Level
+			-IF Level > Old Level, PUTS message 'Congratulations, you are now level X'
+			-Set Current Character's Old Level to Current Character's Level
+			-Set Current Character's Health equal to 9 + Level
+		-Call Action Method
+
+
+*** Attack Method ***	
+
+	- Create RANDOM hit number between 1 and 10 + the attacker's level
+	- IF hit number is > 5
+		- Calculate damage by a RANDOM numbe between 1 and attackers attack value
+		- Subtract damage from defender's health
+		- PUTS the attacker hit for X points of damage
+		- PUTS defender's health
+	- ELSE PUTS the attacker missed
+
+
+*** Heal Method ***
+
+	-Set a variable max health equal to 9 + Current Character Level
+	-Set variable differential equal to max health - Current Character health
+	-Set variable health bonus to 33% of differential
+	-Add health bonus to Current Character health
+	-PUTS you gained health bonus 
+
+*** Unlock Method ***
+
+	-IF Current Character's location is (x,y of the Tower)
+		-PUTS victory text
+		-EXIT
+	-ELSE PUTS nothing happens
 
 
 
 ========= Hashes =========
 
-*** Spell Hash ***
+*** Master Spellbook Hash ***
 
 	-Key is the spell name
 	-Values are an array containing:
 		-Flavor text for casting the spell
 		-A method call
+		-A cost
 
 *** Forest Map Hash ***
 	
  -Most keys are a two digit array of x and y axis values
  -The values are an array containing: 
  		-A description of the location
- 		-A method call, usually a Random Monster Method or a Move Method 
+ 		-A method call, usually a Random Monster Method or a Action Method 
  -One key is a string "Tanglewood Swamp"
   	-The values are an array containing: 
  		-A description of the location
