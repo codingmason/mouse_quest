@@ -309,6 +309,9 @@ class Character
 		@xp += int
 	end
 
+	def gain_treasure(int)
+		@treasure += int
+	end
 	def learn_spell(new_spell)
 		@character_spellbook << new_spell
 	end
@@ -560,17 +563,17 @@ def combat(current_character, current_monster)
 					puts "You currently have #{current_character.health} hit points. The #{current_monster.name} has #{current_monster.health} hit points."
 					if current_monster.health <= 0
 						puts "You have slain the #{current_monster.name}."
-						combat_resolution(current_character, current_monster)
 						victory = true
+						combat_resolution(current_character, current_monster)
 					end	
 					valid_input = true
 				else
 					puts "I'm sorry, I don't understand which spell you're trying to cast."
 				end
 			end
-		else puts "I'm sorry, I know it's scary, but what do you want to do?"
-		end
+		else puts "I'm sorry, I know it's scary, but if you don't enter a real choice, you forfeit your turn."
 
+		end
 		puts "The #{current_monster.name} #{current_monster.attack_flavor_text}"
 		current_character.take_damage(current_monster.attack_value)
 		puts "You now have #{current_character.health} hit points left"
@@ -579,6 +582,34 @@ def combat(current_character, current_monster)
 		end
 	end
 end
+
+
+def combat_resolution(current_character, current_monster)
+	current_character.gain_xp(current_monster.xp)
+		puts "You gain #{current_monster.xp} experience points."
+	current_character.gain_treasure(current_monster.treasure)
+		puts "You find #{current_monster.treasure} pieces of gold on the body of the #{current_monster.name}."
+	move(current_character)
+end
+
+
+# *** Combat Resolution Method ***	
+
+# 	-IF Current Character health is =< 0
+# 		-PUTS a message saying your character died
+# 		-ABORT
+# 	-ELSE
+# 		-PUTS a message that the opponent died
+# 		-Set a treasure variable equal to the opponent treasure * opponent level
+# 		-Set an XP variable equal to the opponent XP * opponent level
+# 		-PUTS a message saying you gained x amount of treasure and XP
+# 		-Add treasure and XP to Current Character's treasure and XP
+# 		-Compare Current Character's Level with Current Character's Base Level
+# 			-IF Level > Base Level, PUTS message 'Congratulations, you are now level X'
+# 			-Set Current Character's Base Level to Current Character's Level
+# 			-Set Current Character's Health equal to 9 + Level
+# 		-Call Action Method
+
 
 
 def save(current_character)
@@ -611,9 +642,6 @@ def attack(attacker, defender)
 	puts "attack!!!!"
 end
 
-def combat_resolution(current_character, current_monster)
-	puts "RESOLUTION!!!!"
-end
 
 def character_death
 	puts "You died!!!!"
