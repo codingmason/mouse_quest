@@ -203,7 +203,6 @@
 			-Set Current Character's Health equal to 9 + Level
 		-Call Action Method
 
-
 *** Attack Method ***	
 
 	- Create RANDOM hit number between 1 and 10 + the attacker's level
@@ -264,6 +263,22 @@
 		-Health 
 		-Attack Value
 		-Attack flavor text
-		-Defend Value
-
 =end
+
+require 'sqlite3'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
