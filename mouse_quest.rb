@@ -267,6 +267,8 @@
 require 'sqlite3'
 
 
+# Class Declarations
+
 class Current_Character
 
 	attr_reader :name
@@ -304,17 +306,45 @@ class Monster
 
 end
 
-# DRIVER CODE #
+# Method Declarations
 
-ed = Current_Character.new("Ed", ["fireball", "featherfall"], 2, 100, 15)
+def intro
+	puts "Welcome brave adventurer! Etc etc"
+	valid_input = FALSE
+	until valid_input == TRUE
+		puts "Would you like to [C]reate a character or [L]oad a character?"
+		answer = gets.chomp
+		if answer.downcase == "c"
+			valid_input = TRUE
+			create_character
+		elsif answer.downcase == "l"
+			valid_input = TRUE
+			load_character
+		else puts "I'm sorry, I didn't understand that. Please enter a valid input."
+		end
+	end
+end
 
-puts ed.character_spellbook[0]
-
-black_adder = Monster.new("black_adder", 2, 5, 50, 50, 4, "bites you with his poison fangs")
-
-puts "the health is #{black_adder.health}"
-puts "the treasure is #{black_adder.treasure}"
-puts "the xp is #{black_adder.xp}"
-puts "the attack value is #{black_adder.attack_value}"
+def create_character
+	puts "create character"
+end
 
 
+def load_character
+	puts "load character"
+end
+
+###### DRIVER CODE #######
+
+# ed = Current_Character.new("Ed", ["fireball", "featherfall"], 2, 100, 15)
+
+# puts ed.character_spellbook[0]
+
+# black_adder = Monster.new("black_adder", 2, 5, 50, 50, 4, "bites you with his poison fangs")
+
+# puts "the health is #{black_adder.health}"
+# puts "the treasure is #{black_adder.treasure}"
+# puts "the xp is #{black_adder.xp}"
+# puts "the attack value is #{black_adder.attack_value}"
+
+intro
