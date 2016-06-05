@@ -327,7 +327,7 @@ end
 
 
 def create_character
-	puts "What is the name of the brave little mouse you would like to create?"
+	puts "What is the name of the mouse you would like to create?"
 	character_name = gets.chomp
 	valid_input = false
 	until valid_input == TRUE
@@ -420,16 +420,39 @@ end
 def new_location(current_character)
 
 	forest_map = {
-	[0,1]  => [1, "You come upon a cheerful glade in the forest. Wildflowers bloom in \n the dapples sunlight. You detect the faint smell of cheese to the South."],
-	"tanglewood" => [3, "You find yourself lost in a dismal stretch of Tanglewood Swamp. \n Serptine vines coil themselves around the sickly, twisted trees. \n A heavy sense of unease hangs in the air."]
+	[0,1]  => [1, " You come upon a cheerful glade in the forest. Wildflowers bloom in \n the dappled sunlight. You detect the faint smell of cheese to the South."],
+	[0,2]  => [2, " You creep into a silent stretch of the woods. Even the crickets have \n stopped chirping here. You shudder. There might be owls about."],
+	[0,-1] => [1, " You cross a lovely babbling brook. Robins are singing in the trees \n and you can hear the sound of faint laughter drifting on the wind \n from the North, and the scent of woodsmoke from the East."],
+	[0,-2] => [2, " You spy an enormous elm tree, and high in it's branches, squirrels \n have built a tidy little cottage. Woodsmoke drifts up from its \n chimney. But however loud you call up to them, no one answers."],
+	[1,0]  => [0, " The sight of a tumbledown old cottage greets you as you round the \n bend. It's owner, a grey-whiskered old mouse is sitting on the \n porch, whistling a tune. He tips his hat to you as you \n pass. You can see a well-trodden path to the West."],
+	[1,1]  => [1, " You find yourself in a mossy dell, shaded with giant ferns that \n grow thick and verdant. A cool mist hangs in the air, and you \n think you can catch glimpses of something darting through the ferns."],
+	[1,2]  => [2, " This is a dark stretch of the forest. The ferns have grown to  \n gargantuan proportions, choking out the sunlight. A flint-eyed raven \n sits staring in the darkness at you."],
+	[1,-1] => [1, " You cross a merry little stream, glinting in the sunlight. And you \n think you can make out, almost playing a countermelody stream \n the faint strains of a tin whistle coming from the South."],
+	[2,0]  => [2, " A broken tower pokes its head out of the tangled briars and fallen \n leaves. It looks old beyond reckoning, the cracked stones riddled \n with lichen. You can't imagine what could have caused it to fall."],
+	[2,1]  => [2, " You wander into an area of the forest still ravaged by a recent \n wildfire. Blackened stumps have given way to scrub brush and a tangle \n of new vines, coiling up out of the blackened husks of great trees."],
+	[2,2]  => [0, " You find a clear and still pool of water, shining like a mirror  \n in the midday sun. There seems to be some sort of crumbled \n statuary scattered in the depths. You can make out a stone \n hand, with what look to be talons, reaching out towards the surface."],
+	[2,-1] => [1, " A reed-lined lake stands before you, emptying into a little stream  \n to the west. A pair of otters are playing chess out on the \n water, with the board balanced between their upturned \n bellies. You wave hello and when the wave back, the whole game tumbles into the deep."],
+	[2,-2] => [3, " Creeping through the underbrush, you spy a silent glade with a \n a fairy circle of mushrooms growing in a ring. But on closer \n inspection, the mushrooms turn out to be toadstools, and they \n send the fur on the back of your neck straight up when you touch them. \n You hear the faint melody of a tin whistle to the West."],
+	[-1,0] => [1, " The path winds its way through the trees until you see a small \n sign nailed to a tree, painted with neat red letters, that \n that reads 'Second Mouse Gets The Cheese.' Words to live by, \n you suppose. Speaking of cheese, you detect the rich odor of blue-veined Stilton \n from the East. You also see a curl of woodsmoke to the South."],
+	[-1,1] => [1, " A chorus of magpies clatteres and caws madly in the trees. You try \n the birds are getting so worked up about, but when you ask \n them, they just titter 'It's coming!!! It's coming!!!!' with a distinct air of malice."],
+	[-1,2] => [0, " You come across a sleeping fawn, bedded down in a circle of fallen \n leaves. The shadows of the Tanglewood Swamp leer in from \n the north, but this place seems strangely peaceful."],
+	[-1,-2]=> [2, " You enter into a glade with a stone well rising up from the matted \n moss and leaves of the forest floor. There's no bucket or \n rope left, and when you drop a pebble in it takes a full \n minute before you can hear a faint splash. "],
+	[-2, 0]=> [2, " Scattered across the forest floor are hundreds upon thousands of \n grey moths, covering everything like a thick twitching blanket. \n They seem to be clustered thickest around a large shape \n in the middle of the glade, but you can't make out exactly what it is under there."],
+	[-2, 1]=> [2, " A vast and scraggly dead oak stands alone in a clearing in the forest, \n it's massive bare branches creaking in the gentle breeze."],
+	[-2, 2]=> [3, " You come upon a dense thicket of willow trees, greedily thrusting their \n roots into the swampy soil. You can smell the bogs and rotting \n vines of the Tanglewood Swamp close by."],
+	[-2,-1]=> [2, " A sweet little rivulet empties into the swamps to the west. But upstream, \n to the east, you see a column of woodsmoke that speaks of \n a cozy fireplace and warm food."],
+	[-2,-2]=> [3, " Nothing in this stretch of forest seems to be moving at all, although \n the breeze has picked up. It's almost as if the trees were made \n of iron and cunningly painted to disguise their dead, frozen nature."],
+	"tanglewood" => [3, " You find yourself lost in a dismal stretch of Tanglewood Swamp. \n Serptine vines coil themselves around the sickly, twisted trees. \n A heavy sense of unease hangs in the air."]
 	}
 
 	if current_character.location == [0,0]
-		cheesewright_inn
+		cheesewright_inn(current_character)
 	elsif current_character.location == [-5,1]
-		tower
+		tower(current_character)
 	elsif current_character.location == [1,-2]
-		witches_hut
+		witches_hut(current_character)
+	elsif current_character.location == [-1,-1]
+		peddlar(current_character)
 	elsif current_character.location[0].abs > 2 || current_character.location[1].abs > 2
 		location = forest_map["tanglewood"]
 		puts location[1]
@@ -442,15 +465,25 @@ def new_location(current_character)
 	end 
 end
 
-# *** New Location Method ***
+def random_monster(level, current_character)
+	puts "The monster that #{current_character.name} is fighting is level " + level.to_s
+	move(current_character)
+end
 
-# 	-IF the Current Character's Location equals the coordinates of a special location,
-# 	 run that location's method.
-# 	-ELSIF the Current Character's x axis absolute value is greater than 2, PUTS the
-# 	 description for the Tanglewood Swamp key of the Forest Map Hash and call the 
-# 	 method listed in the hash
-# 	-ELSE PUTS the description for the location Forest Map Hash whose key matches the
-# 	 Current Character's Location and call the method listed in the hash 
+
+# *** Random Monster Method ***
+
+# 	-Takes an argument of an INTEGER between 1 and 3, set that equal to a variable Level
+# 	-Multiply the Level a RANDOM number between 1 and 3
+# 		-IF the product is less than 3, call the Action Method
+# 		-ELSE set a RANDOM number between one and the Monster Hash length
+# 		-Use that number to select a monster from the Monster Hash
+# 		-Create new instance of the Monster class with information from Monster Hash and
+# 		 Level variable 
+# 		-Set that new Monster equal to Opponent
+# 		-PUTS a message saying that a such and such level monster has appeared
+# 		-Run the Combat Method
+
 
 def save(current_character)
 	puts "I'm saving"
@@ -468,9 +501,11 @@ def witches_hut
 	puts "you arrive at the witches hut"
 end
 
-def random_monster(level, current_character)
-	puts "The monster that #{current_character.name} is fighting is level " + level.to_s
+def peddlar
+	puts "you arrive come across a peddlar"
 end
+
+
 
 
 
