@@ -354,9 +354,7 @@ def create_character
 	character_stats
 end
 
-def load_character
-	puts "load character"
-end
+
 
 def cheesewright_inn(current_character)
 
@@ -380,35 +378,73 @@ def cheesewright_inn(current_character)
     		puts "Sam chuckles. 'Well then, good luck my brave little friend,' and waves " + "\n" +
     			 "as you exit the inn."
     			  valid_input = true
-    			  return move
+    			  move(current_character)
     	else puts "'Eh?!? Speak up! I didn't understand a word of that.'"
     		 valid_input = false
     	end
     end
 end
 
-def move
-	puts "I'm moving"
+
+
+
+# *** Move Method ***
+
+# 	-UNTIL correct input is TRUE
+# 		-PUTS would you like to move North, East, South, West
+# 		-GETS answer
+# 			-IF North add 1 to Current Character's Location y axis. Correct input TRUE 
+# 			-ELSIF East add 1 to Current Character's Location x axis. Correct input TRUE  	
+# 			-ELSIF South add -1 to Current Character's Location y axis. Correct input TRUE  	
+# 			-ELSIF East add -1 to Current Character's Location x axis. Correct input TRUE  	
+# 			-ELSE PUTS that is not a valid direction. . Correct input FALSE 
+# 		-PUTS 'You venture' the chosen direction 'and soon come upon...'
+# 		-Run the New Location Method
+
+
+
+
+def move(current_character)
+	valid_input = false
+	x_axis = current_character.location[0]
+	y_axis = current_character.location[1]
+	until valid_input == TRUE
+		puts "Would you like to travel [N]orth, [E]ast, [S]outh, or [W]est?"
+		answer = gets.chomp
+		if answer.downcase == "n"
+			puts "You travel north..."
+			current_character.location[1] = y_axis + 1
+			valid_input = true
+		elsif answer.downcase == "e"
+			puts "You travel east..."
+			current_character.location[0] = x_axis + 1
+			valid_input = true
+		elsif answer.downcase == "s"
+			puts "You travel south..."
+			current_character.location[1] = y_axis - 1
+			valid_input = true
+		elsif answer.downcase == "w"
+			puts "You travel west..."
+			current_character.location[0] = x_axis - 1	
+			valid_input = true	
+		else puts "That's not a valid direction!"
+			valid_input = false
+		end
+	end
+	new_location(current_character)
 end
 
 def save(current_character)
 	puts "I'm saving"
 end
 
+def load_character
+	puts "load character"
+end
 
-
-
-# *** Cheesewright Inn Method ***
-	
-# 	-UNTIL correct input is TRUE
-# 		-PUTS a description of the inn. The proprieter, Sam Butterwhiskers, asks if
-# 	 	they would like to rest or venture forth
-# 		-GETS response
-# 			-IF rest, run the Save Method. Correct input is TRUE
-# 			-ELSIF venture forth, run the Move Method. Correct input is TRUE
-# 			-ELSE, PUTS an 'I didn't understand that' message. Correct input is FALSE
-
-
+def new_location(current_character)
+	puts current_character.location
+end
 
 
 ###### DRIVER CODE #######
