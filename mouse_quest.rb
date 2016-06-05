@@ -466,46 +466,74 @@ def new_location(current_character)
 end
 
 def random_monster(level, current_character)
-	puts "The monster that #{current_character.name} is fighting is level " + level.to_s
-	move(current_character)
+	# (name, level, health, treasure, xp, attack_value,	attack_flavor_text)
+	monster_library = {
+		1 => ["Black Adder", 3, 5, 50, 50, 4, "bites you with his poison fangs"],
+		2 => ["Red Weasel", 1, 2, 25, 25, 2, "slashes at you with a dagger"],
+		3 => ["Wharf Rat", 2, 3, 80, 35, 4, "hacks at you with a cutlass"],
+	}
+	encounter_probability = level * rand(1..3)
+	if encounter_probability < 3
+		action(current_character)	
+	else
+		monster_selector = rand(1..monster_library.length)
+		monster_stats = monster_library[monster_selector.to_i]
+		current_monster = Monster.new(*monster_stats)
+		puts "A #{current_monster.name} leaps at you from the forest."
+	end
 end
 
+# *** Combat Method ***
 
-# *** Random Monster Method ***
-
-# 	-Takes an argument of an INTEGER between 1 and 3, set that equal to a variable Level
-# 	-Multiply the Level a RANDOM number between 1 and 3
-# 		-IF the product is less than 3, call the Action Method
-# 		-ELSE set a RANDOM number between one and the Monster Hash length
-# 		-Use that number to select a monster from the Monster Hash
-# 		-Create new instance of the Monster class with information from Monster Hash and
-# 		 Level variable 
-# 		-Set that new Monster equal to Opponent
-# 		-PUTS a message saying that a such and such level monster has appeared
-# 		-Run the Combat Method
+# 	-Takes an argument of Opponent
+# 	-UNTIL victory = TRUE
+# 		-PUTS would you like to cast a spell or run away
+# 		-GETS answer
+# 			-IF run away, generate RANDOM number between 1 and 10
+# 				-IF greater than 5, call Action Method
+# 				-ELSE PUTS "The monster catches you"
+# 			-ELSE if cast a spell, PUTS 'What spell would you like to cast'
+# 		-PUTS a list of available spells from the Character Spellbook array
+# 		-GETS the choice of Spell
+# 		-Use the spell name to grab the values from the matching spell in the 
+# 		 Spell Hash. 
+# 			-PUTS the spell flavor text from the Spell Hash
+# 			-Call the method from the Spell Hash
+# 		-IF Opponent health is =< zero, victory = TRUE
+# 		-ELSE 
+# 			-PUTS the attack flavor text from the Monster Hash 
+# 			-Call the Attack method with value from the Monster Hash
+# 		-IF Current Character health is =< 0,  victory = TRUE
+# 		-ELSE victory = FALSE
+# 	-Call the Combat Resolution Method
 
 
 def save(current_character)
 	puts "I'm saving"
 end
 
-def load_character
+def load_character(current_character)
 	puts "load character"
 end
 
-def tower
+def tower(current_character)
 	puts "you arrive at the tower"
 end
 
-def witches_hut
+def witches_hut(current_character)
 	puts "you arrive at the witches hut"
 end
 
-def peddlar
+def peddlar(current_character)
 	puts "you arrive come across a peddlar"
 end
 
+def action(current_character)
+	puts "this is an action"
+	# delete
+		move(current_character)
 
+end
 
 
 
