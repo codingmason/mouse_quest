@@ -269,7 +269,7 @@ require 'sqlite3'
 
 # Class Declarations
 
-class Current_Character
+class Character
 
 	attr_reader :name
 	attr_accessor :character_spellbook, :level, :base_level, :location, :health, :treasure,  :xp
@@ -316,17 +316,57 @@ def intro
 		answer = gets.chomp
 		if answer.downcase == "c"
 			valid_input = TRUE
-			create_character
+			return "create_character"
 		elsif answer.downcase == "l"
 			valid_input = TRUE
-			load_character
+			return "load_character"
 		else puts "I'm sorry, I didn't understand that. Please enter a valid input."
 		end
 	end
 end
 
+# *** Create Character Method ***
+
+# 	-PUTS a question asking for a character name
+# 	-GETS the response. Assign as a variable 'character name'
+# 	-UNTIL correct input is TRUE
+# 		-PUTS a question asking to choose between a few different spells they could use
+# 		-GETS the response. 
+# 			-IF response is correct, assign response as variable 'first spell', input is TRUE
+# 			-ELSE PUTS something like 'I really think you should arm yourself with knowledge'
+# 	-CREATE an instance of the Character Class called Current Character
+# 	-Assign character name and spell to Current Character class variables
+# 	-Query SQLite to to add Character information to the Saved Characters database
+# 	-Query SQLite to to add spell information to the Spellbook database
+# 	-Run Cheesewright Inn Method
+
+
 def create_character
-	puts "create character"
+	puts "What is the name of the brave little mouse you would like to create?"
+	character_name = gets.chomp
+	valid_input = false
+	until valid_input == TRUE
+		puts "Which spell would you like to start #{character_name} off with?" + "\n" +
+		     "  1. Firewhiskers - This spell will scorch your enemies with blazing tendrils of flame" + "\n" +
+		     "  2. Squeekendorf's Heavenly Cheese - This spell will create a magical wedge of cheddar"+ "\n" +
+		     "     that will heal your wounds and fill your belly." + "\n" +
+		     "  3. Mystical Mousetraps - This spell will cause ghostly mousetraps to appear and snap"  + "\n" +      
+		     "     on your foes' toes. Very painful."
+		spell_choice = gets.chomp    
+		if spell_choice.to_i == 1	
+			spell_choice = :firewhiskers
+			valid_input = TRUE
+		elsif spell_choice.to_i == 2
+			spell_choice = :cheese
+			valid_input = TRUE
+		elsif spell_choice.to_i == 3
+			spell_choice = :mousetraps
+			valid_input = TRUE
+		else puts "I'm sorry, I didn't understand that."
+		end
+	end
+	character_stats = [character_name, [spell_choice], 1, 0, 0]
+	character_stats
 end
 
 
@@ -334,9 +374,14 @@ def load_character
 	puts "load character"
 end
 
+def cheesewright_inn
+	puts "Welcome to the Cheesewright Inn!"
+end
+
+
 ###### DRIVER CODE #######
 
-# ed = Current_Character.new("Ed", ["fireball", "featherfall"], 2, 100, 15)
+# ed = Character.new("Ed", ["fireball", "featherfall"], 2, 100, 15)
 
 # puts ed.character_spellbook[0]
 
@@ -347,4 +392,14 @@ end
 # puts "the xp is #{black_adder.xp}"
 # puts "the attack value is #{black_adder.attack_value}"
 
-intro
+create_or_load = intro
+	if create_or_load == "create_character"
+		character_stats = create_character
+	else
+		character_stats = load_character
+	end
+current_character = Character.new(*character_stats)
+puts current_character.name + " can perform " + current_character.character_spellbook[0].to_s
+
+
+
