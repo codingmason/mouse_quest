@@ -7,11 +7,11 @@
 	-Character name
 	-Character Spellbook is an array of spell names
 	-Location equals an array containing an X and Y axis value
-	-Money equals the treasure they've accrued
+	-Treasure equals the treasure they've accrued
 	-XP is the amount of experience they've acquired
 	-Health is 9 plus the Level 
 	-Level is a floored version of XP rounded to the nearest hundred
-	-Old Level
+	-Base Level
 
 
 ========= CLASSES =========
@@ -25,7 +25,6 @@
 	-Health 
 	-Attack Value
 	-Attack flavor text
-	-Defend Value
 
 
 ========= DATABASES =========
@@ -64,7 +63,7 @@
 	-UNTIL correct input is TRUE
 		-PUTS a question asking to choose between a few different spells they could use
 		-GETS the response. 
-			-IF response is correct, assign response as variable 'spell', input is TRUE
+			-IF response is correct, assign response as variable 'first spell', input is TRUE
 			-ELSE PUTS something like 'I really think you should arm yourself with knowledge'
 	-CREATE an instance of the Character Class called Current Character
 	-Assign character name and spell to Current Character class variables
@@ -197,9 +196,9 @@
 		-Set an XP variable equal to the opponent XP * opponent level
 		-PUTS a message saying you gained x amount of treasure and XP
 		-Add treasure and XP to Current Character's treasure and XP
-		-Compare Current Character's Level with Current Character's Old Level
-			-IF Level > Old Level, PUTS message 'Congratulations, you are now level X'
-			-Set Current Character's Old Level to Current Character's Level
+		-Compare Current Character's Level with Current Character's Base Level
+			-IF Level > Base Level, PUTS message 'Congratulations, you are now level X'
+			-Set Current Character's Base Level to Current Character's Level
 			-Set Current Character's Health equal to 9 + Level
 		-Call Action Method
 
@@ -268,17 +267,54 @@
 require 'sqlite3'
 
 
+class Current_Character
+
+	attr_reader :name
+	attr_accessor :character_spellbook, :level, :base_level, :location, :health, :treasure,  :xp
 
 
+	def initialize(name, character_spellbook, level, treasure, xp)
+		@name = name
+		@character_spellbook = character_spellbook
+		@location = [0,0]
+		@level = level
+		@base_level = level
+		@health = level + 9
+		@treasure = treasure
+		@xp = xp
+	end
 
 
+end
 
+class Monster
 
+	attr_reader :name, :level, :treasure, :xp, :attack_value, :attack_flavor_text
+	attr_accessor :health
 
+	def initialize(name, level, health, treasure, xp, attack_value,	attack_flavor_text)
+		@name = name
+		@level = level
+		@health = health + (level * 2)
+		@treasure = rand(1..treasure) * level
+		@xp = (xp * level) - rand(1..xp)
+		@attack_value = attack_value + level
+		@attack_flavor_text = attack_flavor_text
+	end
 
+end
 
+# DRIVER CODE #
 
+ed = Current_Character.new("Ed", ["fireball", "featherfall"], 2, 100, 15)
 
+puts ed.character_spellbook[0]
 
+black_adder = Monster.new("black_adder", 2, 5, 50, 50, 4, "bites you with his poison fangs")
+
+puts "the health is #{black_adder.health}"
+puts "the treasure is #{black_adder.treasure}"
+puts "the xp is #{black_adder.xp}"
+puts "the attack value is #{black_adder.attack_value}"
 
 
