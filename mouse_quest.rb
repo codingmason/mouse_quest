@@ -325,21 +325,6 @@ def intro
 	end
 end
 
-# *** Create Character Method ***
-
-# 	-PUTS a question asking for a character name
-# 	-GETS the response. Assign as a variable 'character name'
-# 	-UNTIL correct input is TRUE
-# 		-PUTS a question asking to choose between a few different spells they could use
-# 		-GETS the response. 
-# 			-IF response is correct, assign response as variable 'first spell', input is TRUE
-# 			-ELSE PUTS something like 'I really think you should arm yourself with knowledge'
-# 	-CREATE an instance of the Character Class called Current Character
-# 	-Assign character name and spell to Current Character class variables
-# 	-Query SQLite to to add Character information to the Saved Characters database
-# 	-Query SQLite to to add spell information to the Spellbook database
-# 	-Run Cheesewright Inn Method
-
 
 def create_character
 	puts "What is the name of the brave little mouse you would like to create?"
@@ -354,13 +339,13 @@ def create_character
 		     "     on your foes' toes. Very painful."
 		spell_choice = gets.chomp    
 		if spell_choice.to_i == 1	
-			spell_choice = :firewhiskers
+			spell_choice = "Firewhiskers"
 			valid_input = TRUE
 		elsif spell_choice.to_i == 2
-			spell_choice = :cheese
+			spell_choice = "Squeekendorf's Heavenly Cheese"
 			valid_input = TRUE
 		elsif spell_choice.to_i == 3
-			spell_choice = :mousetraps
+			spell_choice = "Mystical Mousetraps"
 			valid_input = TRUE
 		else puts "I'm sorry, I didn't understand that."
 		end
@@ -369,14 +354,61 @@ def create_character
 	character_stats
 end
 
-
 def load_character
 	puts "load character"
 end
 
-def cheesewright_inn
-	puts "Welcome to the Cheesewright Inn!"
+def cheesewright_inn(current_character)
+
+	puts "The Cheesewright Inn is a cheerful place, full of warmth, clean beds, " + "\n" +
+         "and the best blue-veined Stilton to be found in the whole Forest. The " + "\n" +
+         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}!" + "\n" +
+         "Good to see you again!'"
+    valid_input = false
+	until valid_input == TRUE
+    	puts "Now, are you stopping by to [R]est, or were you going to [V]enture forth?"
+    	answer = gets.chomp
+    	if answer.downcase == "r"
+    		puts "Well now, help yourself to one of the beds upstairs. I'm sure you'll "  + "\n" +
+    		     "feel better once you've slept a bit."
+    		save(current_character)
+    		puts "After a short rest, you feel fit as a fiddle. Sam is delighted to see " + "\n" +
+    		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!'" + "\n" +
+    		     "Sam beams at you, 'You look ten times the mouse you did before.'" 
+    		valid_input = false
+    	elsif answer.downcase == "v"
+    		puts "Sam chuckles. 'Well then, good luck my brave little friend,' and waves " + "\n" +
+    			 "as you exit the inn."
+    			  valid_input = true
+    			  return move
+    	else puts "'Eh?!? Speak up! I didn't understand a word of that.'"
+    		 valid_input = false
+    	end
+    end
 end
+
+def move
+	puts "I'm moving"
+end
+
+def save(current_character)
+	puts "I'm saving"
+end
+
+
+
+
+# *** Cheesewright Inn Method ***
+	
+# 	-UNTIL correct input is TRUE
+# 		-PUTS a description of the inn. The proprieter, Sam Butterwhiskers, asks if
+# 	 	they would like to rest or venture forth
+# 		-GETS response
+# 			-IF rest, run the Save Method. Correct input is TRUE
+# 			-ELSIF venture forth, run the Move Method. Correct input is TRUE
+# 			-ELSE, PUTS an 'I didn't understand that' message. Correct input is FALSE
+
+
 
 
 ###### DRIVER CODE #######
@@ -399,7 +431,8 @@ create_or_load = intro
 		character_stats = load_character
 	end
 current_character = Character.new(*character_stats)
-puts current_character.name + " can perform " + current_character.character_spellbook[0].to_s
+cheesewright_inn(current_character)
+
 
 
 
