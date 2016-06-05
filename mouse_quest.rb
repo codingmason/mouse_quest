@@ -265,7 +265,7 @@
 =end
 
 require 'sqlite3'
-
+require 'faker'
 
 # Class Declarations
 
@@ -285,9 +285,12 @@ class Character
 		@treasure = treasure
 		@xp = xp
 		@master_spellbook = {
-		 	"Firewhiskers" => ["This spell will scorch your enemies with blazing tendrils of flame", "Tendrils of flame burst from your hands", 3, 0, 200],
-		 	"Squeekendorf's Heavenly Cheese" => ["This spell will create a magical wedge of cheddar that will heal \nyour wounds and fill your belly.", "A delicious wheel of mystic cheddar appears before you, and you devour it.", 0, 3, 200],
-			"Mystical Mousetraps" => ["This spell will cause ghostly mousetraps to appear and snap on your foes' \ntoes. Very painful.", "Your traps go snap snap snap!", 3, 0, 200],
+		    "Arcane Shopping Spree" => ["Arcane shopping spree", "\nDrawing on your sorcerous energies, you summon a \nmagical box from the ethereal plane. When you open \nit, you find a Mystic #{Faker::Commerce.product_name}. Just \nwhat every sorceror's apprentice needs.", 0, 0, 50],
+		 	"Camembert's Sorcerous Habedashery" => ["This spell will cause a holographic hat to appear on your head. Very dashing.", "\nCalling on your arcane powers, you create a mystical #{Faker::Color.color_name} hat \nto appear on your head. Very dashing.", 0, 0, 50],
+		 	"Firewhiskers" => ["This spell will scorch your enemies with blazing tendrils of flame", "\nTendrils of fire burst from your hands, singing them a bit, while your enemy erupts in flames", 4, -1, 200],
+		 	"Squeekendorf's Heavenly Cheese" => ["This spell will create a magical wedge of cheddar that will heal \nyour wounds and fill your belly.", "\nA delicious wheel of mystic cheddar appears before you, and you devour it.", 0, 3, 200],
+			"Mystical Mousetraps" => ["This spell will cause ghostly mousetraps to appear and snap on your foes' \ntoes. Very painful.", "\nYour traps go snap snap snap!", 2, 0, 200]
+
      	}
      end
 
@@ -312,9 +315,17 @@ class Character
 	def gain_treasure(int)
 		@treasure += int
 	end
+
 	def learn_spell(new_spell)
 		@character_spellbook << new_spell
 	end
+
+	def pay(amount)
+		@treasure -= amount
+		puts "You now have #{@treasure} gold pieces.\n"
+	end
+
+
 	# -Master spellbook with each spell:
 	# 	-Name
 	# 	-Description
@@ -348,10 +359,10 @@ end
 # Method Declarations
 
 def intro
-	puts "Welcome brave adventurer! Etc etc"
+	puts "\nWelcome brave adventurer! Etc etc"
 	valid_input = FALSE
 	until valid_input == TRUE
-		puts "Would you like to [C]reate a character or [L]oad a character?"
+		puts "\nWould you like to [C]reate a character or [L]oad a character?"
 		answer = gets.chomp
 		if answer.downcase == "c"
 			valid_input = TRUE
@@ -359,19 +370,20 @@ def intro
 		elsif answer.downcase == "l"
 			valid_input = TRUE
 			return "load_character"
-		else puts "I'm sorry, I didn't understand that. Please enter a valid input."
+		else puts "\nI'm sorry, I didn't understand that. Please enter a valid input."
 		end
 	end
 end
 
 
 def create_character
-	puts "What is the name of the mouse you would like to create?"
+	puts "\nWhat is the name of the mouse you would like to create?"
 	character_name = gets.chomp
 	valid_input = false
 	until valid_input == TRUE
-		puts "Which spell would you like to start #{character_name} off with? \n" +
-		     "  1. Firewhiskers - This spell will scorch your enemies with blazing tendrils of flame \n" +
+		puts "\nWhich spell would you like to start #{character_name} off with? \n" +
+		     "  1. Firewhiskers - This spell will scorch your enemies with blazing tendrils of flame, \n" +
+		     "     but will singe you at the same time.\n" +
 		     "  2. Squeekendorf's Heavenly Cheese - This spell will create a magical wedge of cheddar \n" +
 		     "     that will heal your wounds and fill your belly. \n" +
 		     "  3. Mystical Mousetraps - This spell will cause ghostly mousetraps to appear and snap \n" +      
@@ -389,7 +401,7 @@ def create_character
 		else puts "I'm sorry, I didn't understand that."
 		end
 	end
-	character_stats = [character_name, [spell_choice], 1, 0, 0]
+	character_stats = [character_name, ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", spell_choice], 1, 0, 0]
 	character_stats
 end
 
@@ -397,28 +409,28 @@ end
 
 def cheesewright_inn(current_character)
 
-	puts "The Cheesewright Inn is a cheerful place, full of warmth, clean beds, \n" +
+	puts "\nThe Cheesewright Inn is a cheerful place, full of warmth, clean beds, \n" +
          "and the best blue-veined Stilton to be found in the whole Forest. The \n" +
-         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}! \n" +
+         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}!\n" +
          "Good to see you again!'"
     valid_input = false
 	until valid_input == TRUE
-    	puts "Now, are you stopping by to [R]est, or were you going to [V]enture forth?"
+    	puts "\nNow, are you hoping to [R]est here for a while, or were you going to [V]enture forth?"
     	answer = gets.chomp
     	if answer.downcase == "r"
-    		puts "Well now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
-    		     "feel better once you've slept a bit."
-    		save(current_character)
-    		puts "After a short rest, you feel fit as a fiddle. Sam is delighted to see \n" +
+    		puts "\n'Well now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
+    		     "feel better once you've slept a bit.'"
+    		save_character(current_character)
+    		puts "\nAfter a short rest, you feel fit as a fiddle. Sam is delighted to see \n" +
     		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!' \n" +
-    		     "Sam beams at you, 'You look ten times the mouse you did before.'" 
+    		     "Sam beams at you, 'You look ten times the mouse you did before.'\n" 
     		valid_input = false
     	elsif answer.downcase == "v"
-    		puts "Sam chuckles. 'Well then, good luck my brave little friend,' and waves \n" +
-    			 "as you exit the inn."
+    		puts "\nSam chuckles. 'Well then, good luck my brave little friend,' and waves \n" +
+    			 "as you exit the inn.\n"
     			  valid_input = true
     			  move(current_character)
-    	else puts "'Eh?!? Speak up! I didn't understand a word of that.'"
+    	else puts "\n'Eh?!? Speak up! I didn't understand a word of that.'\n"
     		 valid_input = false
     	end
     end
@@ -430,25 +442,25 @@ def move(current_character)
 	x_axis = current_character.location[0]
 	y_axis = current_character.location[1]
 	until valid_input == TRUE
-		puts "Would you like to travel [N]orth, [E]ast, [S]outh, or [W]est?"
+		puts "\nWould you like to travel [N]orth, [E]ast, [S]outh, or [W]est?\n"
 		answer = gets.chomp
 		if answer.downcase == "n"
-			puts "You travel north..."
+			puts "\nYou travel north..."
 			current_character.location[1] = y_axis + 1
 			valid_input = true
 		elsif answer.downcase == "e"
-			puts "You travel east..."
+			puts "\nYou travel east..."
 			current_character.location[0] = x_axis + 1
 			valid_input = true
 		elsif answer.downcase == "s"
-			puts "You travel south..."
+			puts "\nYou travel south..."
 			current_character.location[1] = y_axis - 1
 			valid_input = true
 		elsif answer.downcase == "w"
-			puts "You travel west..."
+			puts "\nYou travel west..."
 			current_character.location[0] = x_axis - 1	
 			valid_input = true	
-		else puts "That's not a valid direction!"
+		else puts "\nThat's not a valid direction!"
 			valid_input = false
 		end
 	end
@@ -459,29 +471,29 @@ end
 def new_location(current_character)
 
 	forest_map = {
-	[0,1]  => [1, " You come upon a cheerful glade in the forest. Wildflowers bloom in \n the dappled sunlight. You detect the faint smell of cheese to the South."],
-	[0,2]  => [2, " You creep into a silent stretch of the woods. Even the crickets have \n stopped chirping here. You shudder. There might be owls about."],
-	[0,-1] => [1, " You cross a lovely babbling brook. Robins are singing in the trees \n and you can hear the sound of faint laughter drifting on the wind \n from the North, and the scent of woodsmoke from the East."],
-	[0,-2] => [2, " You spy an enormous elm tree, and high in it's branches, squirrels \n have built a tidy little cottage. Woodsmoke drifts up from its \n chimney. But however loud you call up to them, no one answers."],
-	[1,0]  => [0, " The sight of a tumbledown old cottage greets you as you round the \n bend. It's owner, a grey-whiskered old mouse is sitting on the \n porch, whistling a tune. He tips his hat to you as you \n pass. You can see a well-trodden path to the West."],
-	[1,1]  => [1, " You find yourself in a mossy dell, shaded with giant ferns that \n grow thick and verdant. A cool mist hangs in the air, and you \n think you can catch glimpses of something darting through the ferns."],
-	[1,2]  => [2, " This is a dark stretch of the forest. The ferns have grown to  \n gargantuan proportions, choking out the sunlight. A flint-eyed raven \n sits staring in the darkness at you."],
-	[1,-1] => [1, " You cross a merry little stream, glinting in the sunlight. And you \n think you can make out, almost playing a countermelody stream \n the faint strains of a tin whistle coming from the South."],
-	[2,0]  => [2, " A broken tower pokes its head out of the tangled briars and fallen \n leaves. It looks old beyond reckoning, the cracked stones riddled \n with lichen. You can't imagine what could have caused it to fall."],
-	[2,1]  => [2, " You wander into an area of the forest still ravaged by a recent \n wildfire. Blackened stumps have given way to scrub brush and a tangle \n of new vines, coiling up out of the blackened husks of great trees."],
-	[2,2]  => [0, " You find a clear and still pool of water, shining like a mirror  \n in the midday sun. There seems to be some sort of crumbled \n statuary scattered in the depths. You can make out a stone \n hand, with what look to be talons, reaching out towards the surface."],
-	[2,-1] => [1, " A reed-lined lake stands before you, emptying into a little stream  \n to the west. A pair of otters are playing chess out on the \n water, with the board balanced between their upturned \n bellies. You wave hello and when the wave back, the whole game tumbles into the deep."],
-	[2,-2] => [3, " Creeping through the underbrush, you spy a silent glade with a \n a fairy circle of mushrooms growing in a ring. But on closer \n inspection, the mushrooms turn out to be toadstools, and they \n send the fur on the back of your neck straight up when you touch them. \n You hear the faint melody of a tin whistle to the West."],
-	[-1,0] => [1, " The path winds its way through the trees until you see a small \n sign nailed to a tree, painted with neat red letters, that \n that reads 'Second Mouse Gets The Cheese.' Words to live by, \n you suppose. Speaking of cheese, you detect the rich odor of blue-veined Stilton \n from the East. You also see a curl of woodsmoke to the South."],
-	[-1,1] => [1, " A chorus of magpies clatteres and caws madly in the trees. You try \n the birds are getting so worked up about, but when you ask \n them, they just titter 'It's coming!!! It's coming!!!!' with a distinct air of malice."],
-	[-1,2] => [0, " You come across a sleeping fawn, bedded down in a circle of fallen \n leaves. The shadows of the Tanglewood Swamp leer in from \n the north, but this place seems strangely peaceful."],
-	[-1,-2]=> [2, " You enter into a glade with a stone well rising up from the matted \n moss and leaves of the forest floor. There's no bucket or \n rope left, and when you drop a pebble in it takes a full \n minute before you can hear a faint splash. "],
-	[-2, 0]=> [2, " Scattered across the forest floor are hundreds upon thousands of \n grey moths, covering everything like a thick twitching blanket. \n They seem to be clustered thickest around a large shape \n in the middle of the glade, but you can't make out exactly what it is under there."],
-	[-2, 1]=> [2, " A vast and scraggly dead oak stands alone in a clearing in the forest, \n it's massive bare branches creaking in the gentle breeze."],
-	[-2, 2]=> [3, " You come upon a dense thicket of willow trees, greedily thrusting their \n roots into the swampy soil. You can smell the bogs and rotting \n vines of the Tanglewood Swamp close by."],
-	[-2,-1]=> [2, " A sweet little rivulet empties into the swamps to the west. But upstream, \n to the east, you see a column of woodsmoke that speaks of \n a cozy fireplace and warm food."],
-	[-2,-2]=> [3, " Nothing in this stretch of forest seems to be moving at all, although \n the breeze has picked up. It's almost as if the trees were made \n of iron and cunningly painted to disguise their dead, frozen nature."],
-	"tanglewood" => [3, " You find yourself lost in a dismal stretch of Tanglewood Swamp. \n Serptine vines coil themselves around the sickly, twisted trees. \n A heavy sense of unease hangs in the air."]
+	[0,1]  => [1, "\nYou come upon a cheerful glade in the forest. Wildflowers bloom in \nthe dappled sunlight. You detect the faint smell of cheese to the South.\n"],
+	[0,2]  => [2, "\nYou creep into a silent stretch of the woods. Even the crickets have \nstopped chirping here. You shudder. There might be owls about.\n"],
+	[0,-1] => [1, "\nYou cross a lovely babbling brook. Robins are singing in the trees \nand you can hear the sound of faint laughter drifting on the wind \nfrom the North, and the scent of woodsmoke from the East.\n"],
+	[0,-2] => [2, "\nYou spy an enormous elm tree, and high in it's branches, squirrels \nhave built a tidy little cottage. Woodsmoke drifts up from its \nchimney. But however loud you call up to them, no one answers.\n"],
+	[1,0]  => [0, "\nThe sight of a tumbledown old cottage greets you as you round the \nbend. It's owner, a grey-whiskered old mouse is sitting on the \nporch, whistling a tune. He tips his hat to you as you \npass. You can see a well-trodden path to the West.\n"],
+	[1,1]  => [1, "\nYou find yourself in a mossy dell, shaded with giant ferns that \ngrow thick and verdant. A cool mist hangs in the air, and you \nthink you can catch glimpses of something darting through the ferns.\n"],
+	[1,2]  => [2, "\nThis is a dark stretch of the forest. The ferns have grown to  \ngargantuan proportions, choking out the sunlight. A flint-eyed raven \nsits staring in the darkness at you.\n"],
+	[1,-1] => [1, "\nYou cross a merry little stream, glinting in the sunlight. And you \nthink you can make out, almost playing a countermelody stream \nthe faint strains of a tin whistle coming from the South.\n"],
+	[2,0]  => [2, "\nA broken tower pokes its head out of the tangled briars and fallen \nleaves. It looks old beyond reckoning, the cracked stones riddled \nwith lichen. You can't imagine what could have caused it to fall.\n"],
+	[2,1]  => [2, "\nYou wander into an area of the forest still ravaged by a recent \nwildfire. Blackened stumps have given way to scrub brush and a tangle \nof new vines, coiling up out of the blackened husks of great trees.\n"],
+	[2,2]  => [0, "\nYou find a clear and still pool of water, shining like a mirror  \nin the midday sun. There seems to be some sort of crumbled \nstatuary scattered in the depths. You can make out a stone \nhand, with what look to be talons, reaching out towards the surface.\n"],
+	[2,-1] => [1, "\nA reed-lined lake stands before you, emptying into a little stream  \nto the west. A pair of otters are playing chess out on the \nwater, with the board balanced between their upturned \nbellies. You wave hello and when the wave back, the whole game tumbles into the deep.\n"],
+	[2,-2] => [3, "\nCreeping through the underbrush, you spy a silent glade with a \na fairy circle of mushrooms growing in a ring. But on closer \ninspection, the mushrooms turn out to be toadstools, and they \nsend the fur on the back of your neck straight up when you \ntouch them. You hear the faint melody of a tin whistle to the West.\n"],
+	[-1,0] => [1, "\nThe path winds its way through the trees until you see a small \nsign nailed to a tree, painted with neat red letters, that \nthat reads 'Second Mouse Gets The Cheese.' Words to live by, \nyou suppose. Speaking of cheese, you detect the rich odor of \nblue-veined Stilton from the East. You also see a curl of \nwoodsmoke to the South.\n"],
+	[-1,1] => [1, "\nA chorus of magpies clatteres and caws madly in the trees. You try \nthe birds are getting so worked up about, but when you ask \nthem, they just titter 'It's coming!!! It's coming!!!!' with \na distinct air of malice.\n"],
+	[-1,2] => [0, "\nYou come across a sleeping fawn, bedded down in a circle of fallen \nleaves. The shadows of the Tanglewood Swamp leer in from \nthe north, but this place seems strangely peaceful.\n"],
+	[-1,-2]=> [2, "\nYou enter into a glade with a stone well rising up from the matted \nmoss and leaves of the forest floor. There's no bucket or \nrope left, and when you drop a pebble in it takes a full \nminute before you can hear a faint splash.\n"],
+	[-2, 0]=> [2, "\nScattered across the forest floor are hundreds upon thousands of \ngrey moths, covering everything like a twitching woolen blanket. \nThey seem to be clustered thickest around a large shape \nin the middle of the glade, but you can't make out exactly what it is under there.\n"],
+	[-2, 1]=> [2, "\nA vast and scraggly dead oak stands alone in a clearing in the forest, \nit's massive bare branches creaking in the gentle breeze.\n"],
+	[-2, 2]=> [3, "\nYou come upon a dense thicket of willow trees, greedily thrusting their \nroots into the swampy soil. You can smell the bogs and rotting \nvines of the Tanglewood Swamp close by.\n"],
+	[-2,-1]=> [2, "\nA sweet little rivulet empties into the swamps to the west. But upstream, \nto the east, you see a column of woodsmoke that speaks of \na cozy fireplace and warm food.\n"],
+	[-2,-2]=> [3, "\nNothing in this stretch of forest seems to be moving at all, although \nthe breeze has picked up. It's almost as if the trees were made \nof iron and cunningly painted to disguise their dead, frozen nature.\n"],
+	"tanglewood" => [3, "\nYou find yourself lost in a dismal stretch of Tanglewood Swamp. \nSerptine vines coil themselves around the sickly, twisted trees. \nA heavy sense of unease hangs in the air.\n"]
 	}
 
 	if current_character.location == [0,0]
@@ -518,12 +530,12 @@ def random_monster(level, current_character)
 	}
 	encounter_probability = level * rand(1..3)
 	if encounter_probability < 3
-		action(current_character)	
+		move(current_character)	
 	else
 		monster_selector = rand(1..monster_library.length)
 		monster_stats = monster_library[monster_selector.to_i]
 		current_monster = Monster.new(*monster_stats)
-		puts "A #{current_monster.name} leaps at you from the forest."
+		puts "\nA #{current_monster.name} leaps at you from the forest."
 		combat(current_character, current_monster)
 	end
 end
@@ -531,54 +543,57 @@ end
 def combat(current_character, current_monster)
 	victory = false
 	until victory == true
-		puts "Would you like to cast a [S]pell or try to [R]un away?"
+		puts "\nYou have #{current_character.health} hit points. The #{current_monster.name} has #{current_monster.health}."
+		puts "\nWould you like to cast a [S]pell or try to [R]un away?"
 		choice = gets.chomp
 		if choice.downcase == "r"
 			escape_probability = rand(1..10)
 			if escape_probability > 5
-				puts "You manage to escape the #{current_monster.name} by the skin of your teeth."
+				puts "\nYou manage to escape the #{current_monster.name} by the skin of your teeth."
 				action(current_character)
-			else puts "Oh no! The #{current_monster.name} catches you! He #{current_monster.attack_flavor_text}"
+			else puts "\nOh no! The #{current_monster.name} catches you! He #{current_monster.attack_flavor_text}"
 				current_character.take_damage(current_monster.attack_value)
-				puts "You now have #{current_character.health} hit points left"
 				if current_character.health <= 0
-					character_death
+					character_death(current_character)
 				end
 			end
 		elsif choice.downcase == "s"
 			valid_input = false
 			until valid_input == true
-				puts "What spell would you like to cast?"
+				puts "\nWhat spell would you like to cast?"
 				current_character.character_spellbook.each do |spell|
 					puts (current_character.character_spellbook.index(spell) + 1).to_s + ". " + spell 
 				end
 				spell_choice = gets.chomp
 				spell_choice = spell_choice.to_i - 1
 				if spell_choice < current_character.character_spellbook.length && spell_choice >= 0
-					puts "You cast #{current_character.character_spellbook[spell_choice]} at the #{current_monster.name}."
+					puts "\nYou cast #{current_character.character_spellbook[spell_choice]} at the #{current_monster.name}."
 					spell = current_character.master_spellbook[current_character.character_spellbook[spell_choice]]
 					puts spell[1]
 					current_monster.take_damage(spell[2])
 					current_character.heal(spell[3])
-					puts "You currently have #{current_character.health} hit points. The #{current_monster.name} has #{current_monster.health} hit points."
-					if current_monster.health <= 0
-						puts "You have slain the #{current_monster.name}."
-						victory = true
-						combat_resolution(current_character, current_monster)
-					end	
-					valid_input = true
+					puts "\nYou currently have #{current_character.health} hit points. The #{current_monster.name} has #{current_monster.health} hit points."
+						if current_monster.health <= 0
+							puts "\nYou have slain the #{current_monster.name}."
+							victory = true
+							combat_resolution(current_character, current_monster)
+						elsif current_character.health <= 0
+							character_death(current_character)
+						else 
+							valid_input = true
+						end
 				else
-					puts "I'm sorry, I don't understand which spell you're trying to cast."
+					puts "\nI'm sorry, I don't understand which spell you're trying to cast."
 				end
 			end
-		else puts "I'm sorry, I know it's scary, but if you don't enter a real choice, you forfeit your turn."
+		else puts "\nI'm sorry, I know it's scary, but if you don't enter a real choice, you forfeit your turn."
 
 		end
-		puts "The #{current_monster.name} #{current_monster.attack_flavor_text}"
+		puts "\nThe #{current_monster.name} #{current_monster.attack_flavor_text}"
 		current_character.take_damage(current_monster.attack_value)
-		puts "You now have #{current_character.health} hit points left"
+		puts "\nYou now have #{current_character.health} hit points left"
 		if current_character.health <= 0
-			character_death
+			character_death(current_character)
 		end
 	end
 end
@@ -586,7 +601,7 @@ end
 
 def combat_resolution(current_character, current_monster)
 	current_character.gain_xp(current_monster.xp)
-		puts "You gain #{current_monster.xp} experience points."
+		puts "\nYou gain #{current_monster.xp} experience points."
 	current_character.gain_treasure(current_monster.treasure)
 		puts "You find #{current_monster.treasure} pieces of gold on the body of the #{current_monster.name}."
 	move(current_character)
@@ -612,7 +627,7 @@ end
 
 
 
-def save(current_character)
+def save_character(current_character)
 	puts "I'm saving"
 end
 
@@ -632,20 +647,27 @@ def peddlar(current_character)
 	puts "you arrive come across a peddlar"
 end
 
-def action(current_character)
-	puts "this is an action"
-	# delete
-		move(current_character)
-end
-
-def attack(attacker, defender)
-	puts "attack!!!!"
-end
-
-
-def character_death
+def character_death(current_character)
 	puts "You died!!!!"
-	ABORT
+	play_again = true
+	until play_again == false
+		puts "\nWould you like to play again? [Y]es or [N]o?"
+		choice = gets.chomp
+			if choice.downcase == "y" 
+				create_or_load = intro
+					if create_or_load == "create_character"
+						character_stats = create_character
+					else
+						character_stats = load_character
+					end
+				current_character = Character.new(*character_stats)
+				cheesewright_inn(current_character)
+			elsif choice.downcase == "n"
+				puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
+				exit
+			else puts "\nI'm sorry, I didn't understand that."
+			end
+		end
 end
 
 ###### DRIVER CODE #######
@@ -669,7 +691,4 @@ create_or_load = intro
 	end
 current_character = Character.new(*character_stats)
 cheesewright_inn(current_character)
-
-
-
 
