@@ -12,6 +12,13 @@
 	-Health is 9 plus the Level 
 	-Level is a floored version of XP rounded to the nearest hundred
 	-Base Level
+	-Master spellbook with each spell:
+		-Name
+		-Description
+		-Flavor text
+		-Attack value
+		-Heal Value
+		-Price
 
 
 ========= CLASSES =========
@@ -32,17 +39,10 @@
 *** Saved Character Database ***
 
 	-Character name
-	-FOREIGN KEY matching the Spellbook Database
+	-Character Spellbook
 	-Money 
 	-XP
 	-Level
-
-*** Spellbook Database ***
-
-	-Primary Key (should match the Primary Key of the Saved Character Database)
-	-Name (from the Character Name)
-	-Columns for each spell with boolean values showing whether the character knows
-	 the spell or not
 
 
 ========= METHODS =========
@@ -271,7 +271,7 @@ require 'sqlite3'
 
 class Character
 
-	attr_reader :name
+	attr_reader :name, :master_spellbook
 	attr_accessor :character_spellbook, :level, :base_level, :location, :health, :treasure,  :xp
 
 
@@ -284,9 +284,41 @@ class Character
 		@health = level + 9
 		@treasure = treasure
 		@xp = xp
+		@master_spellbook = {
+		 	"Firewhiskers" => ["This spell will scorch your enemies with blazing tendrils of flame", "Tendrils of flame burst from your hands", 3, 0, 200],
+		 	"Squeekendorf's Heavenly Cheese" => ["This spell will create a magical wedge of cheddar that will heal \nyour wounds and fill your belly.", "A delicious wheel of mystic cheddar appears before you, and you devour it.", 0, 3, 200],
+			"Mystical Mousetraps" => ["This spell will cause ghostly mousetraps to appear and snap on your foes' \ntoes. Very painful.", "Your traps go snap snap snap!", 3, 0, 200],
+     	}
+     end
+
+
+
+
+	def take_damage(int)
+		@health -= (int - rand(0..int))
 	end
 
+	def heal(int)
+		@health += int 
+		if @health > (@level + 9)
+			@health = (@level + 9)
+		end
+	end
 
+	def gain_xp(int)
+		@xp += int
+	end
+
+	def learn_spell(new_spell)
+		@character_spellbook << new_spell
+	end
+	# -Master spellbook with each spell:
+	# 	-Name
+	# 	-Description
+	# 	-Flavor text
+	# 	-Attack value
+	# 	-Heal Value
+	# 	-Price
 end
 
 class Monster
@@ -302,6 +334,10 @@ class Monster
 		@xp = (xp * level) - rand(1..xp)
 		@attack_value = attack_value + level
 		@attack_flavor_text = attack_flavor_text
+	end
+
+	def take_damage(int)
+		@health -= int + rand(0..int)
 	end
 
 end
@@ -471,6 +507,11 @@ def random_monster(level, current_character)
 		1 => ["Black Adder", 3, 5, 50, 50, 4, "bites you with his poison fangs"],
 		2 => ["Red Weasel", 1, 2, 25, 25, 2, "slashes at you with a dagger"],
 		3 => ["Wharf Rat", 2, 3, 80, 35, 4, "hacks at you with a cutlass"],
+		4 => ["Sewer Rat", 3, 1, 10, 35, 3, "swings a club at you"],
+		5 => ["Fiendish Stoat", 1, 4, 50, 35, 3, "stabs at you with a rapier"], 
+		6 => ["One-Eyed Tomcat", 3, 6, 100, 100, 6, "bats at you with his massive paws"],
+		7 => ["Common Raven", 1, 2, 10, 10, 1, "stabs at you with his crooked beak"], 
+		8 => ["Evil Churchmouse", 1, 2, 80, 20, 1, "swings at you with an axe"],
 	}
 	encounter_probability = level * rand(1..3)
 	if encounter_probability < 3
@@ -480,32 +521,64 @@ def random_monster(level, current_character)
 		monster_stats = monster_library[monster_selector.to_i]
 		current_monster = Monster.new(*monster_stats)
 		puts "A #{current_monster.name} leaps at you from the forest."
+		combat(current_character, current_monster)
 	end
 end
 
-# *** Combat Method ***
+def combat(current_character, current_monster)
+	victory = false
+	until victory == true
+		puts "Would you like to cast a [S]pell or try to [R]un away?"
+		choice = gets.chomp
+		if choice.downcase == "r"
+			escape_probability = rand(1..10)
+			if escape_probability > 5
+				puts "You manage to escape the #{current_monster.name} by the skin of your teeth."
+				action(current_character)
+			else puts "Oh no! The #{current_monster.name} catches you! He #{current_monster.attack_flavor_text}"
+				current_character.take_damage(current_monster.attack_value)
+				puts "You now have #{current_character.health} hit points left"
+				if current_character.health <= 0
+					character_death
+				end
+			end
+		elsif choice.downcase == "s"
+			valid_input = false
+			until valid_input == true
+				puts "What spell would you like to cast?"
+				current_character.character_spellbook.each do |spell|
+					puts (current_character.character_spellbook.index(spell) + 1).to_s + ". " + spell 
+				end
+				spell_choice = gets.chomp
+				spell_choice = spell_choice.to_i - 1
+				if spell_choice < current_character.character_spellbook.length && spell_choice >= 0
+					puts "You cast #{current_character.character_spellbook[spell_choice]} at the #{current_monster.name}."
+					spell = current_character.master_spellbook[current_character.character_spellbook[spell_choice]]
+					puts spell[1]
+					current_monster.take_damage(spell[2])
+					current_character.heal(spell[3])
+					puts "You currently have #{current_character.health} hit points. The #{current_monster.name} has #{current_monster.health} hit points."
+					if current_monster.health <= 0
+						puts "You have slain the #{current_monster.name}."
+						combat_resolution(current_character, current_monster)
+						victory = true
+					end	
+					valid_input = true
+				else
+					puts "I'm sorry, I don't understand which spell you're trying to cast."
+				end
+			end
+		else puts "I'm sorry, I know it's scary, but what do you want to do?"
+		end
 
-# 	-Takes an argument of Opponent
-# 	-UNTIL victory = TRUE
-# 		-PUTS would you like to cast a spell or run away
-# 		-GETS answer
-# 			-IF run away, generate RANDOM number between 1 and 10
-# 				-IF greater than 5, call Action Method
-# 				-ELSE PUTS "The monster catches you"
-# 			-ELSE if cast a spell, PUTS 'What spell would you like to cast'
-# 		-PUTS a list of available spells from the Character Spellbook array
-# 		-GETS the choice of Spell
-# 		-Use the spell name to grab the values from the matching spell in the 
-# 		 Spell Hash. 
-# 			-PUTS the spell flavor text from the Spell Hash
-# 			-Call the method from the Spell Hash
-# 		-IF Opponent health is =< zero, victory = TRUE
-# 		-ELSE 
-# 			-PUTS the attack flavor text from the Monster Hash 
-# 			-Call the Attack method with value from the Monster Hash
-# 		-IF Current Character health is =< 0,  victory = TRUE
-# 		-ELSE victory = FALSE
-# 	-Call the Combat Resolution Method
+		puts "The #{current_monster.name} #{current_monster.attack_flavor_text}"
+		current_character.take_damage(current_monster.attack_value)
+		puts "You now have #{current_character.health} hit points left"
+		if current_character.health <= 0
+			character_death
+		end
+	end
+end
 
 
 def save(current_character)
@@ -532,11 +605,20 @@ def action(current_character)
 	puts "this is an action"
 	# delete
 		move(current_character)
-
 end
 
+def attack(attacker, defender)
+	puts "attack!!!!"
+end
 
+def combat_resolution(current_character, current_monster)
+	puts "RESOLUTION!!!!"
+end
 
+def character_death
+	puts "You died!!!!"
+	ABORT
+end
 
 ###### DRIVER CODE #######
 
