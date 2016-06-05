@@ -245,7 +245,7 @@
  -Most keys are a two digit array of x and y axis values
  -The values are an array containing: 
  		-A description of the location
- 		-A method call, usually a Random Monster Method or a Action Method 
+ 		-A method call, usually a Random Monster Method or an Action Method 
  -One key is a string "Tanglewood Swamp"
   	-The values are an array containing: 
  		-A description of the location
@@ -331,11 +331,11 @@ def create_character
 	character_name = gets.chomp
 	valid_input = false
 	until valid_input == TRUE
-		puts "Which spell would you like to start #{character_name} off with?" + "\n" +
-		     "  1. Firewhiskers - This spell will scorch your enemies with blazing tendrils of flame" + "\n" +
-		     "  2. Squeekendorf's Heavenly Cheese - This spell will create a magical wedge of cheddar"+ "\n" +
-		     "     that will heal your wounds and fill your belly." + "\n" +
-		     "  3. Mystical Mousetraps - This spell will cause ghostly mousetraps to appear and snap"  + "\n" +      
+		puts "Which spell would you like to start #{character_name} off with? \n" +
+		     "  1. Firewhiskers - This spell will scorch your enemies with blazing tendrils of flame \n" +
+		     "  2. Squeekendorf's Heavenly Cheese - This spell will create a magical wedge of cheddar \n" +
+		     "     that will heal your wounds and fill your belly. \n" +
+		     "  3. Mystical Mousetraps - This spell will cause ghostly mousetraps to appear and snap \n" +      
 		     "     on your foes' toes. Very painful."
 		spell_choice = gets.chomp    
 		if spell_choice.to_i == 1	
@@ -358,24 +358,24 @@ end
 
 def cheesewright_inn(current_character)
 
-	puts "The Cheesewright Inn is a cheerful place, full of warmth, clean beds, " + "\n" +
-         "and the best blue-veined Stilton to be found in the whole Forest. The " + "\n" +
-         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}!" + "\n" +
+	puts "The Cheesewright Inn is a cheerful place, full of warmth, clean beds, \n" +
+         "and the best blue-veined Stilton to be found in the whole Forest. The \n" +
+         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}! \n" +
          "Good to see you again!'"
     valid_input = false
 	until valid_input == TRUE
     	puts "Now, are you stopping by to [R]est, or were you going to [V]enture forth?"
     	answer = gets.chomp
     	if answer.downcase == "r"
-    		puts "Well now, help yourself to one of the beds upstairs. I'm sure you'll "  + "\n" +
+    		puts "Well now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
     		     "feel better once you've slept a bit."
     		save(current_character)
-    		puts "After a short rest, you feel fit as a fiddle. Sam is delighted to see " + "\n" +
-    		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!'" + "\n" +
+    		puts "After a short rest, you feel fit as a fiddle. Sam is delighted to see \n" +
+    		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!' \n" +
     		     "Sam beams at you, 'You look ten times the mouse you did before.'" 
     		valid_input = false
     	elsif answer.downcase == "v"
-    		puts "Sam chuckles. 'Well then, good luck my brave little friend,' and waves " + "\n" +
+    		puts "Sam chuckles. 'Well then, good luck my brave little friend,' and waves \n" +
     			 "as you exit the inn."
     			  valid_input = true
     			  move(current_character)
@@ -384,24 +384,6 @@ def cheesewright_inn(current_character)
     	end
     end
 end
-
-
-
-
-# *** Move Method ***
-
-# 	-UNTIL correct input is TRUE
-# 		-PUTS would you like to move North, East, South, West
-# 		-GETS answer
-# 			-IF North add 1 to Current Character's Location y axis. Correct input TRUE 
-# 			-ELSIF East add 1 to Current Character's Location x axis. Correct input TRUE  	
-# 			-ELSIF South add -1 to Current Character's Location y axis. Correct input TRUE  	
-# 			-ELSIF East add -1 to Current Character's Location x axis. Correct input TRUE  	
-# 			-ELSE PUTS that is not a valid direction. . Correct input FALSE 
-# 		-PUTS 'You venture' the chosen direction 'and soon come upon...'
-# 		-Run the New Location Method
-
-
 
 
 def move(current_character)
@@ -434,6 +416,42 @@ def move(current_character)
 	new_location(current_character)
 end
 
+
+def new_location(current_character)
+
+	forest_map = {
+	[0,1]  => [1, "You come upon a cheerful glade in the forest. Wildflowers bloom in \n the dapples sunlight. You detect the faint smell of cheese to the South."],
+	"tanglewood" => [3, "You find yourself lost in a dismal stretch of Tanglewood Swamp. \n Serptine vines coil themselves around the sickly, twisted trees. \n A heavy sense of unease hangs in the air."]
+	}
+
+	if current_character.location == [0,0]
+		cheesewright_inn
+	elsif current_character.location == [-5,1]
+		tower
+	elsif current_character.location == [1,-2]
+		witches_hut
+	elsif current_character.location[0].abs > 2 || current_character.location[1].abs > 2
+		location = forest_map["tanglewood"]
+		puts location[1]
+		random_monster(location[0], current_character)
+	else
+		coordinates = current_character.location
+		location = forest_map[coordinates] 
+		puts location[1]
+		random_monster(location[0], current_character)
+	end 
+end
+
+# *** New Location Method ***
+
+# 	-IF the Current Character's Location equals the coordinates of a special location,
+# 	 run that location's method.
+# 	-ELSIF the Current Character's x axis absolute value is greater than 2, PUTS the
+# 	 description for the Tanglewood Swamp key of the Forest Map Hash and call the 
+# 	 method listed in the hash
+# 	-ELSE PUTS the description for the location Forest Map Hash whose key matches the
+# 	 Current Character's Location and call the method listed in the hash 
+
 def save(current_character)
 	puts "I'm saving"
 end
@@ -442,9 +460,19 @@ def load_character
 	puts "load character"
 end
 
-def new_location(current_character)
-	puts current_character.location
+def tower
+	puts "you arrive at the tower"
 end
+
+def witches_hut
+	puts "you arrive at the witches hut"
+end
+
+def random_monster(level, current_character)
+	puts "The monster that #{current_character.name} is fighting is level " + level.to_s
+end
+
+
 
 
 ###### DRIVER CODE #######
