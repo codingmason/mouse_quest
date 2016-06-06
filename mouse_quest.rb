@@ -272,12 +272,13 @@ require 'faker'
 class Character
 
 	attr_reader :name, :master_spellbook
-	attr_accessor :character_spellbook, :level, :base_level, :location, :health, :treasure,  :xp
+	attr_accessor :unlearned_spells, :character_spellbook, :level, :base_level, :location, :health, :treasure,  :xp
 
 
 	def initialize(name, character_spellbook, level, treasure, xp)
 		@name = name
 		@character_spellbook = character_spellbook
+		@unlearned_spells = ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", "Firewhiskers", "Squeekendorf's Heavenly Cheese", "Mystical Mousetraps", "Furball Fireball", "Ice Mice", "Magical Mouse Door"] - @character_spellbook
 		@location = [0,0]
 		@level = level
 		@base_level = level
@@ -285,21 +286,21 @@ class Character
 		@treasure = treasure
 		@xp = xp
 		@master_spellbook = {
-		    "Arcane Shopping Spree" => ["Arcane shopping spree", "\nDrawing on your sorcerous energies, you summon a \nmagical box from the ethereal plane. When you open \nit, you find a Mystic #{Faker::Commerce.product_name}. Just \nwhat every sorceror's apprentice needs.", 0, 0, 50],
-		 	"Camembert's Sorcerous Habedashery" => ["This spell will cause a holographic hat to appear on your head. Very dashing.", "\nCalling on your arcane powers, you create a mystical #{Faker::Color.color_name} hat \nto appear on your head. Very dashing.", 0, 0, 50],
-		 	"Firewhiskers" => ["This spell will scorch your enemies with blazing tendrils of flame", "\nTendrils of fire burst from your hands, singing them a bit, while your enemy erupts in flames", 4, -1, 200],
-		 	"Squeekendorf's Heavenly Cheese" => ["This spell will create a magical wedge of cheddar that will heal \nyour wounds and fill your belly.", "\nA delicious wheel of mystic cheddar appears before you, and you devour it.", 0, 3, 200],
-			"Mystical Mousetraps" => ["This spell will cause ghostly mousetraps to appear and snap on your foes' \ntoes. Very painful.", "\nYour traps go snap snap snap!", 2, 0, 200]
-
+		    "Arcane Shopping Spree" => ["Default", "\nDrawing on your sorcerous energies, you summon a \nmagical box from the ethereal plane. When you open \nit, you find a Mystic #{Faker::Commerce.product_name}. Just \nwhat every sorceror's apprentice needs.", 0, 0, 50, "Arcane Shopping Spree"],
+		 	"Camembert's Sorcerous Habedashery" => ["Default", "\nCalling on your arcane powers, you create a mystical #{Faker::Color.color_name} hat \nto appear on your head. Very dashing.", 0, 0, 50,"Camembert's Sorcerous Habedashery"],
+		 	"Firewhiskers" => ["This spell will scorch your enemies with blazing tendrils of flame", "\nTendrils of fire burst from your hands, singing them a bit, while your enemy erupts in flames", 3, -1, 200, "Firewhiskers"],
+		 	"Squeekendorf's Heavenly Cheese" => ["This spell will create a magical wedge of cheddar that will heal \nyour wounds and fill your belly.", "\nA delicious wheel of mystic cheddar appears before you, and you devour it.", 0, 3, 200, "Squeekendorf's Heavenly Cheese"],
+			"Mystical Mousetraps" => ["This spell will cause ghostly mousetraps to appear and snap on your foes' \ntoes. Very painful.", "\nYour traps go snap snap snap!", 2, 0, 200, "Mystical Mousetraps"],
+			"Furball Fireball" => ["This spell causes a gigantic sphere of flaming mice to appear and roll \nover your enemies", "\nSummoning a giant ball of flaming fur, you hurl the fiery sphere at your foe.", 5, 0, 500, "Furball Fireball"] ,
+     		"Ice Mice" => ["This spell causes a swarm of spectral Frost Mice to appear, who will cut your \nfoes to ribbons.", "\nA wintry wind fills the air as a swarm of spectral Frost Mice pounce on your enemy", 5, 0, 500, "Ice Mice"],
+     		"Magical Mouse Door" => ["This spell can cause a mystical opening to appear, allowing access \nto the most impregnable places.", "\nA hole appears underneath your foe, twisting his ankle viciously", 2, 0, 1000, "Magical Mouse Door"]
      	}
      end
-
-
-
 
 	def take_damage(int)
 		@health -= (int - rand(0..int))
 	end
+
 
 	def heal(int)
 		@health += int 
@@ -316,8 +317,12 @@ class Character
 		@treasure += int
 	end
 
+
+
 	def learn_spell(new_spell)
 		@character_spellbook << new_spell
+		@unlearned_spells = @unlearned_spells - @character_spellbook
+		puts "\nYou just learned how to cast #{new_spell}"
 	end
 
 	def pay(amount)
@@ -325,6 +330,57 @@ class Character
 		puts "You now have #{@treasure} gold pieces.\n"
 	end
 
+	def spell_store
+		
+		valid_input = false
+		until valid_input == true
+
+			
+			# @master_spellbook.each_key do |spell|
+			# 	if @character_spellbook[spell] != nil
+			# 		@master_spellbook[spell][6] = true
+			# 	else
+			# 	end
+			# end
+			
+			# unlearnt_spells_array = []
+			
+			# unlearnt_spell_hash.each_key do |spell_name|
+			# 	unlearnt_spells_array << spell_name
+			# end
+
+			puts "\n**Available Spells**\n"
+			@unlearned_spells.each do |spell_name|
+				spell_stats = @master_spellbook[spell_name]
+				puts (@unlearned_spells.index(spell_name) + 1).to_s + ". " + spell_name + " - " +
+				"#{spell_stats[0]} " +
+				"It costs #{spell_stats[4]} gold pieces\n"
+			end
+
+			puts "\nWhat would you like to purchase? Or would you rather [E]xit without buying anything?"
+			choice = gets.chomp
+			if choice.downcase == "e"
+				puts "\nWell, lovely seeing you #{@name}! Stop by any time."
+				valid_input = true
+			elsif choice.to_i == 0 || choice.to_i > @unlearned_spells.length
+				puts "Don't trifle with me, #{@name}! Choose a spell on offer!"
+			else
+				choice_index = choice.to_i
+				choice_index -= 1
+				spell_name = @unlearned_spells[choice_index]
+				spell_stats = @master_spellbook[spell_name]
+				if choice.to_i < @unlearned_spells.length 
+					if spell_stats[4] > @treasure
+						puts "You can't afford that spell"
+					else
+						puts "\n'Excellent choice, #{@name}!' Madame Squeekendorf enthuses." 
+						self.learn_spell(spell_stats[5])
+						self.pay(spell_stats[4])
+					end
+				end
+			end
+		end
+	end
 
 	# -Master spellbook with each spell:
 	# 	-Name
@@ -401,7 +457,7 @@ def create_character
 		else puts "I'm sorry, I didn't understand that."
 		end
 	end
-	character_stats = [character_name, ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", spell_choice], 1, 0, 0]
+	character_stats = [character_name, ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", spell_choice], 1, 2000, 0]
 	character_stats
 end
 
@@ -550,8 +606,8 @@ def combat(current_character, current_monster)
 			escape_probability = rand(1..10)
 			if escape_probability > 5
 				puts "\nYou manage to escape the #{current_monster.name} by the skin of your teeth."
-				action(current_character)
-			else puts "\nOh no! The #{current_monster.name} catches you! He #{current_monster.attack_flavor_text}"
+				move(current_character)
+			else puts "\nOh no! The #{current_monster.name} catches you!"
 				current_character.take_damage(current_monster.attack_value)
 				if current_character.health <= 0
 					character_death(current_character)
@@ -568,10 +624,11 @@ def combat(current_character, current_monster)
 				spell_choice = spell_choice.to_i - 1
 				if spell_choice < current_character.character_spellbook.length && spell_choice >= 0
 					puts "\nYou cast #{current_character.character_spellbook[spell_choice]} at the #{current_monster.name}."
-					spell = current_character.master_spellbook[current_character.character_spellbook[spell_choice]]
-					puts spell[1]
-					current_monster.take_damage(spell[2])
-					current_character.heal(spell[3])
+					spell_name = current_character.character_spellbook[spell_choice]
+					spell_stats = current_character.master_spellbook[spell_name]
+					puts spell_stats[1]
+					current_monster.take_damage(spell_stats[2])
+					current_character.heal(spell_stats[3])
 					puts "\nYou currently have #{current_character.health} hit points. The #{current_monster.name} has #{current_monster.health} hit points."
 						if current_monster.health <= 0
 							puts "\nYou have slain the #{current_monster.name}."
@@ -587,11 +644,9 @@ def combat(current_character, current_monster)
 				end
 			end
 		else puts "\nI'm sorry, I know it's scary, but if you don't enter a real choice, you forfeit your turn."
-
 		end
 		puts "\nThe #{current_monster.name} #{current_monster.attack_flavor_text}"
 		current_character.take_damage(current_monster.attack_value)
-		puts "\nYou now have #{current_character.health} hit points left"
 		if current_character.health <= 0
 			character_death(current_character)
 		end
@@ -608,22 +663,22 @@ def combat_resolution(current_character, current_monster)
 end
 
 
-# *** Combat Resolution Method ***	
+def witches_hut(current_character)
+	puts "\nYou come across a curious structure. It appears to be a house standing on\n" + 
+	     "a giant chicken's foot. It's the home of Madame Squeekendorf, Mistress of\n" +
+	     "Magics! The front door is flung wide open, and the Madame squeeks in delight\n" +
+	     "as she see's you approach. Ah #{current_character.name}! So good to see you!\n" +
+	     "\nI have spells for sale! I can teach you any of these, for a price.\n"
+	current_character.spell_store
+	move(current_character)
+end
 
-# 	-IF Current Character health is =< 0
-# 		-PUTS a message saying your character died
-# 		-ABORT
-# 	-ELSE
-# 		-PUTS a message that the opponent died
-# 		-Set a treasure variable equal to the opponent treasure * opponent level
-# 		-Set an XP variable equal to the opponent XP * opponent level
-# 		-PUTS a message saying you gained x amount of treasure and XP
-# 		-Add treasure and XP to Current Character's treasure and XP
-# 		-Compare Current Character's Level with Current Character's Base Level
-# 			-IF Level > Base Level, PUTS message 'Congratulations, you are now level X'
-# 			-Set Current Character's Base Level to Current Character's Level
-# 			-Set Current Character's Health equal to 9 + Level
-# 		-Call Action Method
+
+
+
+
+
+
 
 
 
@@ -639,9 +694,6 @@ def tower(current_character)
 	puts "you arrive at the tower"
 end
 
-def witches_hut(current_character)
-	puts "you arrive at the witches hut"
-end
 
 def peddlar(current_character)
 	puts "you arrive come across a peddlar"
