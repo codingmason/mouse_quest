@@ -441,11 +441,43 @@ def character_death(current_character)
 				current_character = Character.new(*character_stats)
 				cheesewright_inn(current_character)
 			elsif choice.downcase == "n"
-				puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
+				puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n\n"
 				exit
 			else puts "\nI'm sorry, I didn't understand that."
 			end
 		end
+end
+
+
+def cheesewright_inn(current_character)
+
+	puts "\nThe Cheesewright Inn is a cheerful place, full of warmth, clean beds, \n" +
+         "and the best blue-veined Wenslydale to be found in the whole Forest. The \n" +
+         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}!\n" +
+         "Good to see you again!'"
+    valid_input = false
+	until valid_input == TRUE
+    	puts "\nNow, are you hoping to [R]est here for a while, or were you going to [V]enture forth?\n\n"
+    	answer = gets.chomp
+    	if answer.downcase == "r"
+    		puts "\nWell now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
+    		     "feel better once you've slept a bit.\n\n"
+    		current_character.heal(10)
+    		current_character.save_character
+    		continue(current_character)
+    		puts "\nAfter a short rest, you feel fit as a fiddle. Sam is delighted to see \n" +
+    		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!' \n" +
+    		     "Sam beams at you, 'You look ten times the mouse you did before.'\n" 
+    		valid_input = false
+    	elsif answer.downcase == "v"
+    		puts "\nSam chuckles. 'Well then, good luck my brave little friend,' and waves \n" +
+    			 "as you exit the inn.\n"
+    			  valid_input = true
+    			  move(current_character)
+    	else puts "\n'Eh?!? Speak up! I didn't understand a word of that.'\n"
+    		 valid_input = false
+    	end
+    end
 end
 
 def combat(current_character, current_monster)
@@ -554,7 +586,7 @@ def continue(current_character)
 		puts "\nWould you like to continue your adventure? [Y]es or [N]o?"
     	choice = gets.chomp
     	if choice.downcase == "n"
-			puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
+			puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n\n"
 			exit
 		elsif choice.downcase == "y"
 			puts "\nExcellent! On to the adventure!!!"
@@ -565,37 +597,6 @@ def continue(current_character)
     end
 end
 
-
-def cheesewright_inn(current_character)
-
-	puts "\nThe Cheesewright Inn is a cheerful place, full of warmth, clean beds, \n" +
-         "and the best blue-veined Wenslydale to be found in the whole Forest. The \n" +
-         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}!\n" +
-         "Good to see you again!'"
-    valid_input = false
-	until valid_input == TRUE
-    	puts "\nNow, are you hoping to [R]est here for a while, or were you going to [V]enture forth?"
-    	answer = gets.chomp
-    	if answer.downcase == "r"
-    		puts "\nWell now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
-    		     "feel better once you've slept a bit.\n\n"
-    		current_character.heal(10)
-    		current_character.save_character
-    		continue(current_character)
-    		puts "\nAfter a short rest, you feel fit as a fiddle. Sam is delighted to see \n" +
-    		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!' \n" +
-    		     "Sam beams at you, 'You look ten times the mouse you did before.'\n" 
-    		valid_input = false
-    	elsif answer.downcase == "v"
-    		puts "\nSam chuckles. 'Well then, good luck my brave little friend,' and waves \n" +
-    			 "as you exit the inn.\n"
-    			  valid_input = true
-    			  move(current_character)
-    	else puts "\n'Eh?!? Speak up! I didn't understand a word of that.'\n"
-    		 valid_input = false
-    	end
-    end
-end
 
 def forest_map(current_character)
 	map_array = [
@@ -744,7 +745,7 @@ def move(current_character)
 			puts "Are you sure you want to quit? [Y]es or [N]o?"
 			quit_answer = gets.chomp
 				if quit_answer.downcase == "y"
-			  		puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
+			  		puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n\n"
 					exit
 				else
 					puts "The adventure continues!!!"
