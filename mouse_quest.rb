@@ -301,7 +301,7 @@ class Character
 		@xp = xp
 		@master_spellbook = {
 		    "Arcane Shopping Spree" => ["Default", "\nDrawing on your sorcerous energies, you summon a \nmagical box from the ethereal plane. When you open \nit, you find a Mystic #{Faker::Commerce.product_name}. Just \nwhat every sorceror's apprentice needs.", 0, 0, 50, "Arcane Shopping Spree"],
-		 	"Camembert's Sorcerous Habedashery" => ["Default", "\nCalling on your arcane powers, you create a mystical #{Faker::Color.color_name} hat \nto appear on your head. Very dashing.", 0, 0, 50,"Camembert's Sorcerous Habedashery"],
+		 	"Camembert's Sorcerous Habedashery" => ["Default", "\nCalling on your arcane powers, you create a mystical #{Faker::Color.color_name} hat \nto appear on its head. Very dashing.", 0, 0, 50,"Camembert's Sorcerous Habedashery"],
 		 	"Firewhiskers" => ["This spell will scorch your enemies with blazing tendrils of flame", "\nTendrils of fire burst from your hands, singing them a bit, while your enemy erupts in flames", 3, -1, 200, "Firewhiskers"],
 		 	"Squeekendorf's Heavenly Cheese" => ["This spell will create a magical wedge of cheddar that will heal \nyour wounds and fill your belly.", "\nA delicious wheel of mystic cheddar appears before you, and you devour it.", 0, 3, 200, "Squeekendorf's Heavenly Cheese"],
 			"Mystical Mousetraps" => ["This spell will cause ghostly mousetraps to appear and snap on your foes' \ntoes. Very painful.", "\nYour traps go snap snap snap!", 2, 0, 200, "Mystical Mousetraps"],
@@ -515,11 +515,11 @@ def combat_resolution(current_character, current_monster)
 	move(current_character)
 end
 def create_character
-	puts "\nWhat is the name of the mouse you would like to create?"
+	puts "\nWhat is the name of the mouse you would like to create?" + "\n\n"
 	character_name = gets.chomp
 	valid_input = false
 	until valid_input == TRUE
-		puts "\nWhich spell would you like to start #{character_name} off with? \n" +
+		puts "\nWhich spell would you like to start #{character_name} off with?" + "\n\n" +
 		     "  1. Firewhiskers - This spell will scorch your enemies with blazing tendrils of flame, \n" +
 		     "     but will singe you at the same time.\n" +
 		     "  2. Squeekendorf's Heavenly Cheese - This spell will create a magical wedge of cheddar \n" +
@@ -544,7 +544,7 @@ def create_character
     id = id_array[0][0]
     id = id.to_i
     id += 1
-	character_stats = [id, character_name, ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", spell_choice], 1, 2000, 0]
+	character_stats = [id, character_name, ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", spell_choice], 1, 0, 0]
 	character_stats
 end
 
@@ -577,8 +577,8 @@ def cheesewright_inn(current_character)
     	puts "\nNow, are you hoping to [R]est here for a while, or were you going to [V]enture forth?"
     	answer = gets.chomp
     	if answer.downcase == "r"
-    		puts "\n'Well now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
-    		     "feel better once you've slept a bit.'"
+    		puts "\nWell now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
+    		     "feel better once you've slept a bit.\n\n"
     		current_character.heal(10)
     		current_character.save_character
     		continue(current_character)
@@ -645,10 +645,20 @@ def intro
 		SQL
 	db.execute(create_table_cmd)
 
-	puts "\nWelcome brave adventurer! For many years"
+	puts "\nWelcome brave adventurer! For many years the Old Forest and all the gentle Mouse-folk" +
+		 "\nwho live in it have been terrorized by roving bands of brigands and beasts. Dark" +
+		 "\ntimes indeed for the peaceful inhabitants of the woods! But there is a legend," +
+		 "\nwhispered about from mouse to mouse, that there exists a hidden tower somewhere" +
+		 "\nlost in the forest depths. And inside that tower, is the most potent arcane artifact" +
+		 "\never created by the Cheese Wizards of old, the Sacred Stilton!" + "\n" +
+		 "\nYou are a just a pipsqueek of a sorcerer's apprentice, small even by mouse standards," +
+		 "\nwith only a few minor cantrips in your spellbook. But bravery knows no size! You have" +
+		 "\nset out on a quest to retrieve the Sacred Stilton and save the people of the Old Forest!" +
+		 "\nAdventure awaits..."
+
 	valid_input = FALSE
 	until valid_input == TRUE
-		puts "\nWould you like to [C]reate a character, [L]oad a character, or [D]elete a saved character?"
+		puts "\nWould you like to [C]reate a character, [L]oad a character, or [D]elete a saved character?" + "\n\n" 
 		answer = gets.chomp
 		if answer.downcase == "c"
 			valid_input = TRUE
@@ -658,7 +668,7 @@ def intro
 		elsif answer.downcase == "d" && db.execute("SELECT * FROM save_character") == []
 			puts "You don't have any saved characters to delete."
 		elsif answer.downcase == "d" 
-			puts "Which saved character would you like to delete?"
+			puts "Which saved character would you like to delete?\n"
 			id = db.execute("SELECT id FROM save_character")
 			name = db.execute("SELECT name FROM save_character")
 			puts id.zip(name).join(" ")
@@ -666,8 +676,9 @@ def intro
 			if answer.to_i == 0 || db.execute("SELECT * FROM save_character WHERE id='#{answer.to_i}'") == []
 				puts "I'm sorry, I didn't undersand you. Pick a valid number"
 			else
+				deleted_character_name = db.execute("SELECT name FROM save_character WHERE id='#{answer.to_i}'")
 				character_array = db.execute("DELETE FROM save_character WHERE id='#{answer.to_i}'")
-				puts "The saved character has been deleted."
+				puts "The record for #{deleted_character_name[0][0]} has been deleted."
 			end
 		elsif answer.downcase == "l"
 			valid_input = TRUE
@@ -709,7 +720,7 @@ def move(current_character)
 	x_axis = current_character.location[0]
 	y_axis = current_character.location[1]
 	until valid_input == TRUE
-		puts "\nWould you like to travel [N]orth, [E]ast, [S]outh, [W]est, or look at the [M]ap?\n"
+		puts "\nWould you like to travel [N]orth, [E]ast, [S]outh, [W]est, look at the [M]ap, or [Q]uit?\n"
 		answer = gets.chomp
 		if answer.downcase == "n"
 			puts "\nYou travel north..."
@@ -729,6 +740,16 @@ def move(current_character)
 			valid_input = true	
 		elsif answer.downcase == "m"
 			forest_map(current_character)
+		elsif answer.downcase == "q"
+			puts "Are you sure you want to quit? [Y]es or [N]o?"
+			quit_answer = gets.chomp
+				if quit_answer.downcase == "y"
+			  		puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
+					exit
+				else
+					puts "The adventure continues!!!"
+					valid_input = false
+				end
 		else puts "\nThat's not a valid direction!"
 			valid_input = false
 		end
@@ -752,7 +773,7 @@ def new_location(current_character)
 	[2,2]  => [0, "\nYou find a clear and still pool of water, shining like a mirror  \nin the midday sun. There seems to be some sort of crumbled \nstatuary scattered in the depths. You can make out a stone \nhand, with what look to be talons, reaching out towards the surface.\n"],
 	[2,-1] => [1, "\nA reed-lined lake stands before you, emptying into a little stream  \nto the west. A pair of otters are playing chess out on the \nwater, with the board balanced between their upturned \nbellies. You wave hello and when the wave back, the whole game tumbles into the deep.\n"],
 	[2,-2] => [3, "\nCreeping through the underbrush, you spy a silent glade with a \na fairy circle of mushrooms growing in a ring. But on closer \ninspection, the mushrooms turn out to be toadstools, and they \nsend the fur on the back of your neck straight up when you \ntouch them. You hear the faint melody of a tin whistle to the West.\n"],
-	[-1,0] => [1, "\nThe path winds its way through the trees until you see a small \nsign nailed to a tree, painted with neat red letters, that \nthat reads 'Second Mouse Gets The Cheese.' Words to live by, \nyou suppose. Speaking of cheese, you detect the rich odor of \nblue-veined Stilton from the East. You also see a curl of \nwoodsmoke to the South.\n"],
+	[-1,0] => [1, "\nThe path winds its way through the trees until you see a small \nsign nailed to a tree, painted with neat red letters, that \nthat reads 'Second Mouse Gets The Cheese.' Words to live by, \nyou suppose. Speaking of cheese, you detect the rich odor of \nblue-veined Wenslydale from the East. You also see a curl of \nwoodsmoke to the South.\n"],
 	[-1,1] => [1, "\nA chorus of magpies clatteres and caws madly in the trees. You try \nthe birds are getting so worked up about, but when you ask \nthem, they just titter 'It's coming!!! It's coming!!!!' with \na distinct air of malice.\n"],
 	[-1,2] => [0, "\nYou come across a sleeping fawn, bedded down in a circle of fallen \nleaves. The shadows of the Tanglewood Swamp leer in from \nthe north, but this place seems strangely peaceful.\n"],
 	[-1,-2]=> [2, "\nYou enter into a glade with a stone well rising up from the matted \nmoss and leaves of the forest floor. There's no bucket or \nrope left, and when you drop a pebble in it takes a full \nminute before you can hear a faint splash.\n"],
@@ -849,7 +870,7 @@ def tower(current_character)
 		puts "\nAha!!! That's it!!! The Magical Mouse Door Spell!!!! Press any key to cast it."
 		gets.chomp
 		puts "\nA magical hole appears in the side of the tower. You can smell the heavenly" +
-		     "\naroma of the most potent acrane cheese known to Mousendom, the Sacred Stilton!" +
+		     "\naroma of the most potent acrane cheese known to Mousedom, the Sacred Stilton!" +
 		     "\nYour quest is victorious!!!! Congratulations #{current_character.name}! Your" +
 		     "\nname will go down in Mousey History!!!!" +
 		     "\n" + "\nTHE END"
