@@ -466,7 +466,7 @@ end
 def cheesewright_inn(current_character)
 
 	puts "\nThe Cheesewright Inn is a cheerful place, full of warmth, clean beds, \n" +
-         "and the best blue-veined Stilton to be found in the whole Forest. The \n" +
+         "and the best blue-veined Wenslydale to be found in the whole Forest. The \n" +
          "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}!\n" +
          "Good to see you again!'"
     valid_input = false
@@ -554,7 +554,8 @@ def new_location(current_character)
 
 	if current_character.location == [0,0]
 		cheesewright_inn(current_character)
-	elsif current_character.location == [-5,1]
+	elsif current_character.location == [1,0]
+		# [-5,1]
 		tower(current_character)
 	elsif current_character.location == [1,-2]
 		witches_hut(current_character)
@@ -659,6 +660,7 @@ def combat_resolution(current_character, current_monster)
 		puts "\nYou gain #{current_monster.xp} experience points."
 	current_character.gain_treasure(current_monster.treasure)
 		puts "You find #{current_monster.treasure} pieces of gold on the body of the #{current_monster.name}."
+	    puts "You now have #{current_character.treasure} pieces of gold and have #{current_character.xp} points of experience."
 	move(current_character)
 end
 
@@ -671,32 +673,6 @@ def witches_hut(current_character)
 	     "\nI have spells for sale! I can teach you any of these, for a price.\n"
 	current_character.spell_store
 	move(current_character)
-end
-
-
-
-
-
-
-
-
-
-
-def save_character(current_character)
-	puts "I'm saving"
-end
-
-def load_character(current_character)
-	puts "load character"
-end
-
-def tower(current_character)
-	puts "you arrive at the tower"
-end
-
-
-def peddlar(current_character)
-	puts "you arrive come across a peddlar"
 end
 
 def character_death(current_character)
@@ -721,6 +697,69 @@ def character_death(current_character)
 			end
 		end
 end
+
+
+
+
+
+def forest_map
+
+end
+
+
+def save_character(current_character)
+	puts "I'm saving"
+end
+
+def load_character(current_character)
+	puts "load character"
+end
+
+def tower(current_character)
+	puts "\nStumbling through the endless vines and treacherous bogs of the Tanglewood" +
+	     "\nSwamp, you see a tower rising up from verdant undergrowth. This must be the" +
+	     "\nplace! The Tower of the Sacred Stilton!!! But there doesn't seem to be a door." +
+	     "\nIf only there were some magical means of ingress..."
+	if current_character.character_spellbook.include? "Magical Mouse Door"
+		puts "\nAha!!! That's it!!! The Magical Mouse Door Spell!!!! Press any key to cast it."
+		gets.chomp
+		puts "\nA magical hole appears in the side of the tower. You can smell the heavenly" +
+		     "\naroma of the most potent acrane cheese known to Mousendom, the Sacred Stilton!" +
+		     "\nYour quest is victorious!!!! Congratulations #{current_character.name}! Your" +
+		     "\nname will go down in Mousey History!!!!" +
+		     "\n" + "\nTHE END"
+		exit
+	else
+		move(current_character)
+	end
+end
+
+
+def peddlar(current_character)
+	puts "\nStumbling into a clearing, you see a merry little campfire sending up a fragrant" +
+	     "\ncolumn of woodsmoke. Beside it is a brightly painted caravan, and no sooner do you" +
+	     "\nenter into the light of the fire than an aged chipmunk steps out of the wagon. 'Hello!'" +
+	     "\nhe says, 'Make yourself comfortable, friend. I'm a peddlar, but the only stock I have is" +
+	     "\ninformation. I know where a secret treasure is hidden, but you'll have to cross my palm" +
+	     "\nwith gold to get me to tell!'\n" + "\n"
+	     "\nIt will cost you perfectly reasonable 500 gold pieces."
+	valid_input = false
+	until valid_input == true
+	    puts "\nIs it a deal? [Y]es or [N]o?"
+		answer = gets.chomp
+		if answer.downcase == "y"
+			puts "\n'The treasure lies three leagues west of the Dead Oak. Fare thee well, traveler!'"
+			valid_input = true
+		elsif answer.downcase == "n"
+			puts "\n'Well then, stranger. Your loss! But come again any time. Now if you'll excuse me...'"
+			valid_input = true
+		else
+			puts "\nEh?!?!! I didn't understand that one bit."
+	end
+	move(current_character)
+end
+
+
 
 ###### DRIVER CODE #######
 
