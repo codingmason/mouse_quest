@@ -212,6 +212,14 @@
 		- PUTS defender's health
 	- ELSE PUTS the attacker missed
 
+*** Forest Map Method ***
+	-Create a 3-d array with asterisks for each point on the map and numbers
+	 for named location
+	-When method is called, add brackets around the current asterisk using the location
+	 x and y axis 
+	-print the array
+	-PUTS a map key
+	-GETS to exit and call a MOVE method
 
 *** Heal Method ***
 
@@ -272,7 +280,7 @@ require 'faker'
 class Character
 
 	attr_reader :name, :master_spellbook
-	attr_accessor :unlearned_spells, :character_spellbook, :level, :base_level, :location, :health, :treasure,  :xp
+	attr_accessor :unlearned_spells, :character_spellbook, :level, :location, :health, :treasure,  :xp
 
 
 	def initialize(name, character_spellbook, level, treasure, xp)
@@ -280,8 +288,7 @@ class Character
 		@character_spellbook = character_spellbook
 		@unlearned_spells = ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", "Firewhiskers", "Squeekendorf's Heavenly Cheese", "Mystical Mousetraps", "Furball Fireball", "Ice Mice", "Magical Mouse Door"] - @character_spellbook
 		@location = [0,0]
-		@level = level
-		@base_level = level
+		@level = level 
 		@health = level + 9
 		@treasure = treasure
 		@xp = xp
@@ -311,6 +318,12 @@ class Character
 
 	def gain_xp(int)
 		@xp += int
+		new_level = (@xp * 0.01) + 1
+		if new_level.floor > @level
+			@level = new_level.floor
+			puts "\nYou are now level #{@level}"
+		else
+		end
 	end
 
 	def gain_treasure(int)
@@ -699,19 +712,6 @@ def character_death(current_character)
 		end
 end
 
-=begin
-	
-==== Forest Map Method =====
-	-Create a 3-d array with asterisks for each point on the map and numbers
-	 for named location
-	-When method is called, add brackets around the current asterisk using the location
-	 x and y axis 
-	-print the array
-	-PUTS a map key
-	-GETS to exit and call a MOVE method
-=end
-
-
 
 def forest_map(current_character)
 	map_array = [
@@ -744,9 +744,19 @@ def forest_map(current_character)
 		move(current_character)
 	end
 end
-
+# *** Save Method ***
+	
+# 	-Query SQLite and push Current Character attributes to Saved Character Database 
+# 	 with matching name
+# 	-Query SQLite and push Character Spellbook attributes to Spellbook Database with 
+# 	 matching name
+# 	-PUTS question if they would like to continue or not
+# 		-IF yes, PUTS description of waking up at the inn and have Sam wish them good
+# 		luck on their quest. Run the Action Method 
+# 		-ELSE, PUTS a goodbye message and end program
 
 def save_character(current_character)
+
 	puts "I'm saving"
 end
 
