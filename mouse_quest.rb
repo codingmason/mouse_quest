@@ -479,6 +479,7 @@ def load_character
 			character_array = db.execute("SELECT * FROM save_character WHERE id='#{answer.to_i}'")
 		    character_stats = character_array[0] 
 		    character_spellbook = character_stats[2].split(", ")
+		    character_spellbook.map! {|word| word.delete('"[]')}
 		    character_stats[2] = character_spellbook
 		    return character_stats
 		end
@@ -530,6 +531,7 @@ def continue(current_character)
 			exit
 		elsif choice.downcase == "y"
 			puts "\nExcellent! On to the adventure!!!"
+			valid_input = true
 		else 
 			puts "\nI'm sorry, I didn't understand that."
     	end
@@ -745,8 +747,8 @@ def witches_hut(current_character)
 	puts "\nYou come across a curious structure. It appears to be a house standing on\n" + 
 	     "a giant chicken's foot. It's the home of Madame Squeekendorf, Mistress of\n" +
 	     "Magics! The front door is flung wide open, and the Madame squeeks in delight\n" +
-	     "as she see's you approach. Ah #{current_character.name}! So good to see you!\n" +
-	     "\nI have spells for sale! I can teach you any of these, for a price.\n"
+	     "as she see's you approach. 'Ah #{current_character.name}! So good to see you!'\n" +
+	     "\n'I have spells for sale! I can teach you any of these, for a price.'\n"
 	current_character.spell_store
 	move(current_character)
 end
