@@ -272,11 +272,17 @@
 		-Attack flavor text
 =end
 
+
+
+
+
+
+#============= Require Statements ================
+
 require 'sqlite3'
 require 'faker'
 
-# Class Declarations
-
+#============= Class Declarations================
 class Character
 
 	attr_reader :name, :master_spellbook, :id
@@ -305,16 +311,15 @@ class Character
      	}
      end
 
-	def take_damage(int)
-		@health -= (int - rand(0..int))
-	end
-
-
 	def heal(int)
 		@health += int 
 		if @health > (@level + 9)
 			@health = (@level + 9)
 		end
+	end
+
+	def gain_treasure(int)
+		@treasure += int
 	end
 
 	def gain_xp(int)
@@ -325,10 +330,6 @@ class Character
 			puts "\nYou are now level #{@level}"
 		else
 		end
-	end
-
-	def gain_treasure(int)
-		@treasure += int
 	end
 
 	def learn_spell(new_spell)
@@ -343,19 +344,18 @@ class Character
 	end
 
 	def spell_store
-		
 		valid_input = false
 		until valid_input == true
 
 			puts "\n**Available Spells**\n"
-			@unlearned_spells.each do |spell_name|
-				spell_stats = @master_spellbook[spell_name]
-				puts (@unlearned_spells.index(spell_name) + 1).to_s + ". " + spell_name + " - " +
-				"#{spell_stats[0]} " +
-				"It costs #{spell_stats[4]} gold pieces\n"
-			end
-
-			puts "\nWhat would you like to purchase? Or would you rather [E]xit without buying anything?"
+				@unlearned_spells.each do |spell_name|
+					spell_stats = @master_spellbook[spell_name]
+					puts (@unlearned_spells.index(spell_name) + 1).to_s + ". " + spell_name + " - " +
+					"#{spell_stats[0]} " +
+					"It costs #{spell_stats[4]} gold pieces\n"
+				end
+			puts "\nYou have #{@treasure} gold coins."
+			puts "\nWhat would you like to purchase? Or would you rather [E]xit the shop?"
 			choice = gets.chomp
 			if choice.downcase == "e"
 				puts "\nWell, lovely seeing you #{@name}! Stop by any time."
@@ -367,14 +367,12 @@ class Character
 				choice_index -= 1
 				spell_name = @unlearned_spells[choice_index]
 				spell_stats = @master_spellbook[spell_name]
-				if choice.to_i < @unlearned_spells.length 
-					if spell_stats[4] > @treasure
-						puts "You can't afford that spell"
-					else
-						puts "\n'Excellent choice, #{@name}!' Madame Squeekendorf enthuses." 
-						self.learn_spell(spell_stats[5])
-						self.pay(spell_stats[4])
-					end
+				if spell_stats[4] > @treasure
+					puts "You can't afford that spell"
+				else
+					puts "\n'Excellent choice, #{@name}!' Madame Squeekendorf enthuses." 
+					self.learn_spell(spell_stats[5])
+					self.pay(spell_stats[4])
 				end
 			end
 		end
@@ -382,7 +380,6 @@ class Character
 
 	def save_character
 		db = SQLite3::Database.new("mouse_quest_save_data.db")
-
 		create_table_cmd = <<-SQL
 		CREATE TABLE IF NOT EXISTS save_character(
 		  id INTEGER PRIMARY KEY,
@@ -394,12 +391,15 @@ class Character
 		)
 		SQL
 		db.execute(create_table_cmd)
-
-
 		db.execute("INSERT OR REPLACE INTO save_character(id, name, character_spellbook, level, treasure, xp) VALUES (?, ?, ?, ?, ?, ?)", [@id, @name, @character_spellbook.to_s, @level, @treasure, @xp]) 
 		puts "Your character #{@name} has been saved."
 	end
+
+	def take_damage(int)
+		@health -= (int - rand(0..int))
+	end
 end
+
 
 class Monster
 
@@ -423,256 +423,29 @@ class Monster
 
 end
 
-# Method Declarations
+#============= Method Declarations================
 
-def intro
-
-	db = SQLite3::Database.new("mouse_quest_save_data.db")
-	db.results_as_hash = true
-
-	create_table_cmd = <<-SQL
-	CREATE TABLE IF NOT EXISTS save_character(
-		 id INTEGER PRIMARY KEY,
-		 name VARCHAR(100),
-		 character_spellbook VARCHAR(500),
-		 level INTEGER,
-		 treasure INTEGER,
-		 xp INTEGER
-		)
-		SQL
-	db.execute(create_table_cmd)
-
-	puts "\nWelcome brave adventurer! Etc etc"
-	valid_input = FALSE
-	until valid_input == TRUE
-		puts "\nWould you like to [C]reate a character or [L]oad a character?"
-		answer = gets.chomp
-		if answer.downcase == "c"
-			valid_input = TRUE
-			return "create_character"
-		elsif answer.downcase == "l" && db.execute("SELECT * FROM save_character WHERE id='1' ") == []
-			puts "You don't have any saved characters."
-		elsif answer.downcase == "l"
-			valid_input = TRUE
-			return "load_character"
-		else 
-			puts "\nI'm sorry, I didn't understand that. Please enter a valid input."
+def character_death(current_character)
+	puts "You died!!!!"
+	play_again = true
+	until play_again == false
+		puts "\nWould you like to play again? [Y]es or [N]o?"
+		choice = gets.chomp
+			if choice.downcase == "y" 
+				create_or_load = intro
+					if create_or_load == "create_character"
+						character_stats = create_character
+					else
+						character_stats = load_character
+					end
+				current_character = Character.new(*character_stats)
+				cheesewright_inn(current_character)
+			elsif choice.downcase == "n"
+				puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
+				exit
+			else puts "\nI'm sorry, I didn't understand that."
+			end
 		end
-	end
-end
-
-def load_character
-	valid_input = false
-	until valid_input == true
-		db = SQLite3::Database.new("mouse_quest_save_data.db")
-		puts "Which character would you like to load?"
-
-		id = db.execute("SELECT id FROM save_character")
-		name = db.execute("SELECT name FROM save_character")
-		puts id.zip(name).join(" ")
-		answer = gets.chomp
-
-		if answer.to_i == 0 || answer.to_i > id.length
-			puts "I'm sorry, I didn't undersand you. Pick a valid number"
-		else
-			valid_input = true
-			character_array = db.execute("SELECT * FROM save_character WHERE id='#{answer.to_i}'")
-		    character_stats = character_array[0] 
-		    character_spellbook = character_stats[2].split(", ")
-		    character_spellbook.map! {|word| word.delete('"[]')}
-		    character_stats[2] = character_spellbook
-		    return character_stats
-		end
-	end
-end
-
-
-def create_character
-	puts "\nWhat is the name of the mouse you would like to create?"
-	character_name = gets.chomp
-	valid_input = false
-	until valid_input == TRUE
-		puts "\nWhich spell would you like to start #{character_name} off with? \n" +
-		     "  1. Firewhiskers - This spell will scorch your enemies with blazing tendrils of flame, \n" +
-		     "     but will singe you at the same time.\n" +
-		     "  2. Squeekendorf's Heavenly Cheese - This spell will create a magical wedge of cheddar \n" +
-		     "     that will heal your wounds and fill your belly. \n" +
-		     "  3. Mystical Mousetraps - This spell will cause ghostly mousetraps to appear and snap \n" +      
-		     "     on your foes' toes. Very painful."
-		spell_choice = gets.chomp    
-		if spell_choice.to_i == 1	
-			spell_choice = "Firewhiskers"
-			valid_input = TRUE
-		elsif spell_choice.to_i == 2
-			spell_choice = "Squeekendorf's Heavenly Cheese"
-			valid_input = TRUE
-		elsif spell_choice.to_i == 3
-			spell_choice = "Mystical Mousetraps"
-			valid_input = TRUE
-		else puts "I'm sorry, I didn't understand that."
-		end
-	end
-    db = SQLite3::Database.new("mouse_quest_save_data.db")
-    id_array = db.execute("SELECT MAX(id) FROM save_character")
-    id = id_array[0][0]
-    id = id.to_i
-    id += 1
-	character_stats = [id, character_name, ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", spell_choice], 1, 2000, 0]
-	character_stats
-end
-
-def continue(current_character)
-	valid_input = false
-	until valid_input == true
-		puts "\nWould you like to continue your adventure? [Y]es or [N]o?"
-    	choice = gets.chomp
-    	if choice.downcase == "n"
-			puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
-			exit
-		elsif choice.downcase == "y"
-			puts "\nExcellent! On to the adventure!!!"
-			valid_input = true
-		else 
-			puts "\nI'm sorry, I didn't understand that."
-    	end
-    end
-end
-
-
-def cheesewright_inn(current_character)
-
-	puts "\nThe Cheesewright Inn is a cheerful place, full of warmth, clean beds, \n" +
-         "and the best blue-veined Wenslydale to be found in the whole Forest. The \n" +
-         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}!\n" +
-         "Good to see you again!'"
-    valid_input = false
-	until valid_input == TRUE
-    	puts "\nNow, are you hoping to [R]est here for a while, or were you going to [V]enture forth?"
-    	answer = gets.chomp
-    	if answer.downcase == "r"
-    		puts "\n'Well now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
-    		     "feel better once you've slept a bit.'"
-    		current_character.save_character
-    		continue(current_character)
-    		puts "\nAfter a short rest, you feel fit as a fiddle. Sam is delighted to see \n" +
-    		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!' \n" +
-    		     "Sam beams at you, 'You look ten times the mouse you did before.'\n" 
-    		valid_input = false
-    	elsif answer.downcase == "v"
-    		puts "\nSam chuckles. 'Well then, good luck my brave little friend,' and waves \n" +
-    			 "as you exit the inn.\n"
-    			  valid_input = true
-    			  move(current_character)
-    	else puts "\n'Eh?!? Speak up! I didn't understand a word of that.'\n"
-    		 valid_input = false
-    	end
-    end
-end
-
-
-def move(current_character)
-	valid_input = false
-	x_axis = current_character.location[0]
-	y_axis = current_character.location[1]
-	until valid_input == TRUE
-		puts "\nWould you like to travel [N]orth, [E]ast, [S]outh, [W]est, or look at the [M]ap?\n"
-		answer = gets.chomp
-		if answer.downcase == "n"
-			puts "\nYou travel north..."
-			current_character.location[1] = y_axis + 1
-			valid_input = true
-		elsif answer.downcase == "e"
-			puts "\nYou travel east..."
-			current_character.location[0] = x_axis + 1
-			valid_input = true
-		elsif answer.downcase == "s"
-			puts "\nYou travel south..."
-			current_character.location[1] = y_axis - 1
-			valid_input = true
-		elsif answer.downcase == "w"
-			puts "\nYou travel west..."
-			current_character.location[0] = x_axis - 1	
-			valid_input = true	
-		elsif answer.downcase == "m"
-			forest_map(current_character)
-		else puts "\nThat's not a valid direction!"
-			valid_input = false
-		end
-	end
-	new_location(current_character)
-end
-
-
-def new_location(current_character)
-
-	forest_map = {
-	[0,1]  => [1, "\nYou come upon a cheerful glade in the forest. Wildflowers bloom in \nthe dappled sunlight. You detect the faint smell of cheese to the South.\n"],
-	[0,2]  => [2, "\nYou creep into a silent stretch of the woods. Even the crickets have \nstopped chirping here. You shudder. There might be owls about.\n"],
-	[0,-1] => [1, "\nYou cross a lovely babbling brook. Robins are singing in the trees \nand you can hear the sound of faint laughter drifting on the wind \nfrom the North, and the scent of woodsmoke from the East.\n"],
-	[0,-2] => [2, "\nYou spy an enormous elm tree, and high in it's branches, squirrels \nhave built a tidy little cottage. Woodsmoke drifts up from its \nchimney. But however loud you call up to them, no one answers.\n"],
-	[1,0]  => [0, "\nThe sight of a tumbledown old cottage greets you as you round the \nbend. It's owner, a grey-whiskered old mouse is sitting on the \nporch, whistling a tune. He tips his hat to you as you \npass. You can see a well-trodden path to the West.\n"],
-	[1,1]  => [1, "\nYou find yourself in a mossy dell, shaded with giant ferns that \ngrow thick and verdant. A cool mist hangs in the air, and you \nthink you can catch glimpses of something darting through the ferns.\n"],
-	[1,2]  => [2, "\nThis is a dark stretch of the forest. The ferns have grown to  \ngargantuan proportions, choking out the sunlight. A flint-eyed raven \nsits staring in the darkness at you.\n"],
-	[1,-1] => [1, "\nYou cross a merry little stream, glinting in the sunlight. And you \nthink you can make out, almost playing a countermelody stream \nthe faint strains of a tin whistle coming from the South.\n"],
-	[2,0]  => [2, "\nA broken tower pokes its head out of the tangled briars and fallen \nleaves. It looks old beyond reckoning, the cracked stones riddled \nwith lichen. You can't imagine what could have caused it to fall.\n"],
-	[2,1]  => [2, "\nYou wander into an area of the forest still ravaged by a recent \nwildfire. Blackened stumps have given way to scrub brush and a tangle \nof new vines, coiling up out of the blackened husks of great trees.\n"],
-	[2,2]  => [0, "\nYou find a clear and still pool of water, shining like a mirror  \nin the midday sun. There seems to be some sort of crumbled \nstatuary scattered in the depths. You can make out a stone \nhand, with what look to be talons, reaching out towards the surface.\n"],
-	[2,-1] => [1, "\nA reed-lined lake stands before you, emptying into a little stream  \nto the west. A pair of otters are playing chess out on the \nwater, with the board balanced between their upturned \nbellies. You wave hello and when the wave back, the whole game tumbles into the deep.\n"],
-	[2,-2] => [3, "\nCreeping through the underbrush, you spy a silent glade with a \na fairy circle of mushrooms growing in a ring. But on closer \ninspection, the mushrooms turn out to be toadstools, and they \nsend the fur on the back of your neck straight up when you \ntouch them. You hear the faint melody of a tin whistle to the West.\n"],
-	[-1,0] => [1, "\nThe path winds its way through the trees until you see a small \nsign nailed to a tree, painted with neat red letters, that \nthat reads 'Second Mouse Gets The Cheese.' Words to live by, \nyou suppose. Speaking of cheese, you detect the rich odor of \nblue-veined Stilton from the East. You also see a curl of \nwoodsmoke to the South.\n"],
-	[-1,1] => [1, "\nA chorus of magpies clatteres and caws madly in the trees. You try \nthe birds are getting so worked up about, but when you ask \nthem, they just titter 'It's coming!!! It's coming!!!!' with \na distinct air of malice.\n"],
-	[-1,2] => [0, "\nYou come across a sleeping fawn, bedded down in a circle of fallen \nleaves. The shadows of the Tanglewood Swamp leer in from \nthe north, but this place seems strangely peaceful.\n"],
-	[-1,-2]=> [2, "\nYou enter into a glade with a stone well rising up from the matted \nmoss and leaves of the forest floor. There's no bucket or \nrope left, and when you drop a pebble in it takes a full \nminute before you can hear a faint splash.\n"],
-	[-2, 0]=> [2, "\nScattered across the forest floor are hundreds upon thousands of \ngrey moths, covering everything like a twitching woolen blanket. \nThey seem to be clustered thickest around a large shape \nin the middle of the glade, but you can't make out exactly what it is under there.\n"],
-	[-2, 1]=> [2, "\nA vast and scraggly dead oak stands alone in a clearing in the forest, \nit's massive bare branches creaking in the gentle breeze.\n"],
-	[-2, 2]=> [3, "\nYou come upon a dense thicket of willow trees, greedily thrusting their \nroots into the swampy soil. You can smell the bogs and rotting \nvines of the Tanglewood Swamp close by.\n"],
-	[-2,-1]=> [2, "\nA sweet little rivulet empties into the swamps to the west. But upstream, \nto the east, you see a column of woodsmoke that speaks of \na cozy fireplace and warm food.\n"],
-	[-2,-2]=> [3, "\nNothing in this stretch of forest seems to be moving at all, although \nthe breeze has picked up. It's almost as if the trees were made \nof iron and cunningly painted to disguise their dead, frozen nature.\n"],
-	"tanglewood" => [3, "\nYou find yourself lost in a dismal stretch of Tanglewood Swamp. \nSerptine vines coil themselves around the sickly, twisted trees. \nA heavy sense of unease hangs in the air.\n"]
-	}
-
-	if current_character.location == [0,0]
-		cheesewright_inn(current_character)
-	elsif current_character.location == [-5,1]
-		tower(current_character)
-	elsif current_character.location == [1,-2]
-		witches_hut(current_character)
-	elsif current_character.location == [-1,-1]
-		peddlar(current_character)
-	elsif current_character.location[0].abs > 2 || current_character.location[1].abs > 2
-		location = forest_map["tanglewood"]
-		puts location[1]
-		random_monster(location[0], current_character)
-	else
-		coordinates = current_character.location
-		location = forest_map[coordinates] 
-		puts location[1]
-		random_monster(location[0], current_character)
-	end 
-end
-
-def random_monster(level, current_character)
-	# (name, level, health, treasure, xp, attack_value,	attack_flavor_text)
-	monster_library = {
-		1 => ["Black Adder", 3, 5, 50, 50, 4, "bites you with his poison fangs"],
-		2 => ["Red Weasel", 1, 2, 25, 25, 2, "slashes at you with a dagger"],
-		3 => ["Wharf Rat", 2, 3, 80, 35, 4, "hacks at you with a cutlass"],
-		4 => ["Sewer Rat", 3, 1, 10, 35, 3, "swings a club at you"],
-		5 => ["Fiendish Stoat", 1, 4, 50, 35, 3, "stabs at you with a rapier"], 
-		6 => ["One-Eyed Tomcat", 3, 6, 100, 100, 6, "bats at you with his massive paws"],
-		7 => ["Common Raven", 1, 2, 10, 10, 1, "stabs at you with his crooked beak"], 
-		8 => ["Evil Churchmouse", 1, 2, 80, 20, 1, "swings at you with an axe"],
-	}
-	encounter_probability = level * rand(1..3)
-	if encounter_probability < 3
-		move(current_character)	
-	else
-		monster_selector = rand(1..monster_library.length)
-		monster_stats = monster_library[monster_selector.to_i]
-		current_monster = Monster.new(*monster_stats)
-		puts "\nA #{current_monster.name} leaps at you from the forest."
-		combat(current_character, current_monster)
-	end
 end
 
 def combat(current_character, current_monster)
@@ -741,41 +514,88 @@ def combat_resolution(current_character, current_monster)
 	    puts "You now have #{current_character.treasure} pieces of gold and have #{current_character.xp} points of experience."
 	move(current_character)
 end
-
-
-def witches_hut(current_character)
-	puts "\nYou come across a curious structure. It appears to be a house standing on\n" + 
-	     "a giant chicken's foot. It's the home of Madame Squeekendorf, Mistress of\n" +
-	     "Magics! The front door is flung wide open, and the Madame squeeks in delight\n" +
-	     "as she see's you approach. 'Ah #{current_character.name}! So good to see you!'\n" +
-	     "\n'I have spells for sale! I can teach you any of these, for a price.'\n"
-	current_character.spell_store
-	move(current_character)
-end
-
-def character_death(current_character)
-	puts "You died!!!!"
-	play_again = true
-	until play_again == false
-		puts "\nWould you like to play again? [Y]es or [N]o?"
-		choice = gets.chomp
-			if choice.downcase == "y" 
-				create_or_load = intro
-					if create_or_load == "create_character"
-						character_stats = create_character
-					else
-						character_stats = load_character
-					end
-				current_character = Character.new(*character_stats)
-				cheesewright_inn(current_character)
-			elsif choice.downcase == "n"
-				puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
-				exit
-			else puts "\nI'm sorry, I didn't understand that."
-			end
+def create_character
+	puts "\nWhat is the name of the mouse you would like to create?"
+	character_name = gets.chomp
+	valid_input = false
+	until valid_input == TRUE
+		puts "\nWhich spell would you like to start #{character_name} off with? \n" +
+		     "  1. Firewhiskers - This spell will scorch your enemies with blazing tendrils of flame, \n" +
+		     "     but will singe you at the same time.\n" +
+		     "  2. Squeekendorf's Heavenly Cheese - This spell will create a magical wedge of cheddar \n" +
+		     "     that will heal your wounds and fill your belly. \n" +
+		     "  3. Mystical Mousetraps - This spell will cause ghostly mousetraps to appear and snap \n" +      
+		     "     on your foes' toes. Very painful."
+		spell_choice = gets.chomp    
+		if spell_choice.to_i == 1	
+			spell_choice = "Firewhiskers"
+			valid_input = TRUE
+		elsif spell_choice.to_i == 2
+			spell_choice = "Squeekendorf's Heavenly Cheese"
+			valid_input = TRUE
+		elsif spell_choice.to_i == 3
+			spell_choice = "Mystical Mousetraps"
+			valid_input = TRUE
+		else puts "I'm sorry, I didn't understand that."
 		end
+	end
+    db = SQLite3::Database.new("mouse_quest_save_data.db")
+    id_array = db.execute("SELECT MAX(id) FROM save_character")
+    id = id_array[0][0]
+    id = id.to_i
+    id += 1
+	character_stats = [id, character_name, ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", spell_choice], 1, 2000, 0]
+	character_stats
 end
 
+def continue(current_character)
+	valid_input = false
+	until valid_input == true
+		puts "\nWould you like to continue your adventure? [Y]es or [N]o?"
+    	choice = gets.chomp
+    	if choice.downcase == "n"
+			puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
+			exit
+		elsif choice.downcase == "y"
+			puts "\nExcellent! On to the adventure!!!"
+			valid_input = true
+		else 
+			puts "\nI'm sorry, I didn't understand that."
+    	end
+    end
+end
+
+
+def cheesewright_inn(current_character)
+
+	puts "\nThe Cheesewright Inn is a cheerful place, full of warmth, clean beds, \n" +
+         "and the best blue-veined Wenslydale to be found in the whole Forest. The \n" +
+         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}!\n" +
+         "Good to see you again!'"
+    valid_input = false
+	until valid_input == TRUE
+    	puts "\nNow, are you hoping to [R]est here for a while, or were you going to [V]enture forth?"
+    	answer = gets.chomp
+    	if answer.downcase == "r"
+    		puts "\n'Well now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
+    		     "feel better once you've slept a bit.'"
+    		current_character.heal(10)
+    		current_character.save_character
+    		continue(current_character)
+    		puts "\nAfter a short rest, you feel fit as a fiddle. Sam is delighted to see \n" +
+    		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!' \n" +
+    		     "Sam beams at you, 'You look ten times the mouse you did before.'\n" 
+    		valid_input = false
+    	elsif answer.downcase == "v"
+    		puts "\nSam chuckles. 'Well then, good luck my brave little friend,' and waves \n" +
+    			 "as you exit the inn.\n"
+    			  valid_input = true
+    			  move(current_character)
+    	else puts "\n'Eh?!? Speak up! I didn't understand a word of that.'\n"
+    		 valid_input = false
+    	end
+    end
+end
 
 def forest_map(current_character)
 	map_array = [
@@ -809,42 +629,160 @@ def forest_map(current_character)
 		move(current_character)
 	end
 end
-# *** Save Method ***
-	
 
+def intro
+# Initiate Database 
+	db = SQLite3::Database.new("mouse_quest_save_data.db")
+	create_table_cmd = <<-SQL
+	CREATE TABLE IF NOT EXISTS save_character(
+		 id INTEGER PRIMARY KEY,
+		 name VARCHAR(100),
+		 character_spellbook VARCHAR(500),
+		 level INTEGER,
+		 treasure INTEGER,
+		 xp INTEGER
+		)
+		SQL
+	db.execute(create_table_cmd)
 
-#   (name, character_spellbook, level, treasure, xp)
-# 	-Query SQLite and push Current Character attributes to Saved Character Database 
-# 	 with matching name
-# 	-Query SQLite and push Character Spellbook attributes to Spellbook Database with 
-# 	 matching name
-# 	-PUTS question if they would like to continue or not
-# 		-IF yes, PUTS description of waking up at the inn and have Sam wish them good
-# 		luck on their quest. Run the Action Method 
-# 		-ELSE, PUTS a goodbye message and end program
-
-
-
-
-def tower(current_character)
-	puts "\nStumbling through the endless vines and treacherous bogs of the Tanglewood" +
-	     "\nSwamp, you see a tower rising up from verdant undergrowth. This must be the" +
-	     "\nplace! The Tower of the Sacred Stilton!!! But there doesn't seem to be a door." +
-	     "\nIf only there were some magical means of ingress..."
-	if current_character.character_spellbook.include? "Magical Mouse Door"
-		puts "\nAha!!! That's it!!! The Magical Mouse Door Spell!!!! Press any key to cast it."
-		gets.chomp
-		puts "\nA magical hole appears in the side of the tower. You can smell the heavenly" +
-		     "\naroma of the most potent acrane cheese known to Mousendom, the Sacred Stilton!" +
-		     "\nYour quest is victorious!!!! Congratulations #{current_character.name}! Your" +
-		     "\nname will go down in Mousey History!!!!" +
-		     "\n" + "\nTHE END"
-		exit
-	else
-		move(current_character)
+	puts "\nWelcome brave adventurer! For many years"
+	valid_input = FALSE
+	until valid_input == TRUE
+		puts "\nWould you like to [C]reate a character, [L]oad a character, or [D]elete a saved character?"
+		answer = gets.chomp
+		if answer.downcase == "c"
+			valid_input = TRUE
+			return "create_character"
+		elsif answer.downcase == "l" && db.execute("SELECT * FROM save_character") == []
+			puts "You don't have any saved characters."
+		elsif answer.downcase == "d" && db.execute("SELECT * FROM save_character") == []
+			puts "You don't have any saved characters to delete."
+		elsif answer.downcase == "d" 
+			puts "Which saved character would you like to delete?"
+			id = db.execute("SELECT id FROM save_character")
+			name = db.execute("SELECT name FROM save_character")
+			puts id.zip(name).join(" ")
+			answer = gets.chomp
+			if answer.to_i == 0 || db.execute("SELECT * FROM save_character WHERE id='#{answer.to_i}'") == []
+				puts "I'm sorry, I didn't undersand you. Pick a valid number"
+			else
+				character_array = db.execute("DELETE FROM save_character WHERE id='#{answer.to_i}'")
+				puts "The saved character has been deleted."
+			end
+		elsif answer.downcase == "l"
+			valid_input = TRUE
+			return "load_character"
+		else 
+			puts "\nI'm sorry, I didn't understand that. Please enter a valid input."
+		end
 	end
 end
 
+
+def load_character
+	valid_input = false
+	until valid_input == true
+		db = SQLite3::Database.new("mouse_quest_save_data.db")
+		puts "Which character would you like to load?"
+
+		id = db.execute("SELECT id FROM save_character")
+		name = db.execute("SELECT name FROM save_character")
+		puts id.zip(name).join(" ")
+		answer = gets.chomp
+
+		if answer.to_i == 0 || answer.to_i > id.length
+			puts "I'm sorry, I didn't undersand you. Pick a valid number"
+		else
+			valid_input = true
+			character_array = db.execute("SELECT * FROM save_character WHERE id='#{answer.to_i}'")
+		    character_stats = character_array[0] 
+		    character_spellbook = character_stats[2].split(", ")
+		    character_spellbook.map! {|word| word.delete('"[]')}
+		    character_stats[2] = character_spellbook
+		    return character_stats
+		end
+	end
+end
+
+def move(current_character)
+	valid_input = false
+	x_axis = current_character.location[0]
+	y_axis = current_character.location[1]
+	until valid_input == TRUE
+		puts "\nWould you like to travel [N]orth, [E]ast, [S]outh, [W]est, or look at the [M]ap?\n"
+		answer = gets.chomp
+		if answer.downcase == "n"
+			puts "\nYou travel north..."
+			current_character.location[1] = y_axis + 1
+			valid_input = true
+		elsif answer.downcase == "e"
+			puts "\nYou travel east..."
+			current_character.location[0] = x_axis + 1
+			valid_input = true
+		elsif answer.downcase == "s"
+			puts "\nYou travel south..."
+			current_character.location[1] = y_axis - 1
+			valid_input = true
+		elsif answer.downcase == "w"
+			puts "\nYou travel west..."
+			current_character.location[0] = x_axis - 1	
+			valid_input = true	
+		elsif answer.downcase == "m"
+			forest_map(current_character)
+		else puts "\nThat's not a valid direction!"
+			valid_input = false
+		end
+	end
+	new_location(current_character)
+end
+
+
+def new_location(current_character)
+	forest_map = {
+	[0,1]  => [1, "\nYou come upon a cheerful glade in the forest. Wildflowers bloom in \nthe dappled sunlight. You detect the faint smell of cheese to the South.\n"],
+	[0,2]  => [2, "\nYou creep into a silent stretch of the woods. Even the crickets have \nstopped chirping here. You shudder. There might be owls about.\n"],
+	[0,-1] => [1, "\nYou cross a lovely babbling brook. Robins are singing in the trees \nand you can hear the sound of faint laughter drifting on the wind \nfrom the North, and the scent of woodsmoke from the East.\n"],
+	[0,-2] => [2, "\nYou spy an enormous elm tree, and high in it's branches, squirrels \nhave built a tidy little cottage. Woodsmoke drifts up from its \nchimney. But however loud you call up to them, no one answers.\n"],
+	[1,0]  => [0, "\nThe sight of a tumbledown old cottage greets you as you round the \nbend. It's owner, a grey-whiskered old mouse is sitting on the \nporch, whistling a tune. He tips his hat to you as you \npass. You can see a well-trodden path to the West.\n"],
+	[1,1]  => [1, "\nYou find yourself in a mossy dell, shaded with giant ferns that \ngrow thick and verdant. A cool mist hangs in the air, and you \nthink you can catch glimpses of something darting through the ferns.\n"],
+	[1,2]  => [2, "\nThis is a dark stretch of the forest. The ferns have grown to  \ngargantuan proportions, choking out the sunlight. A flint-eyed raven \nsits staring in the darkness at you.\n"],
+	[1,-1] => [1, "\nYou cross a merry little stream, glinting in the sunlight. And you \nthink you can make out, almost playing a countermelody stream \nthe faint strains of a tin whistle coming from the South.\n"],
+	[2,0]  => [2, "\nA broken tower pokes its head out of the tangled briars and fallen \nleaves. It looks old beyond reckoning, the cracked stones riddled \nwith lichen. You can't imagine what could have caused it to fall.\n"],
+	[2,1]  => [2, "\nYou wander into an area of the forest still ravaged by a recent \nwildfire. Blackened stumps have given way to scrub brush and a tangle \nof new vines, coiling up out of the blackened husks of great trees.\n"],
+	[2,2]  => [0, "\nYou find a clear and still pool of water, shining like a mirror  \nin the midday sun. There seems to be some sort of crumbled \nstatuary scattered in the depths. You can make out a stone \nhand, with what look to be talons, reaching out towards the surface.\n"],
+	[2,-1] => [1, "\nA reed-lined lake stands before you, emptying into a little stream  \nto the west. A pair of otters are playing chess out on the \nwater, with the board balanced between their upturned \nbellies. You wave hello and when the wave back, the whole game tumbles into the deep.\n"],
+	[2,-2] => [3, "\nCreeping through the underbrush, you spy a silent glade with a \na fairy circle of mushrooms growing in a ring. But on closer \ninspection, the mushrooms turn out to be toadstools, and they \nsend the fur on the back of your neck straight up when you \ntouch them. You hear the faint melody of a tin whistle to the West.\n"],
+	[-1,0] => [1, "\nThe path winds its way through the trees until you see a small \nsign nailed to a tree, painted with neat red letters, that \nthat reads 'Second Mouse Gets The Cheese.' Words to live by, \nyou suppose. Speaking of cheese, you detect the rich odor of \nblue-veined Stilton from the East. You also see a curl of \nwoodsmoke to the South.\n"],
+	[-1,1] => [1, "\nA chorus of magpies clatteres and caws madly in the trees. You try \nthe birds are getting so worked up about, but when you ask \nthem, they just titter 'It's coming!!! It's coming!!!!' with \na distinct air of malice.\n"],
+	[-1,2] => [0, "\nYou come across a sleeping fawn, bedded down in a circle of fallen \nleaves. The shadows of the Tanglewood Swamp leer in from \nthe north, but this place seems strangely peaceful.\n"],
+	[-1,-2]=> [2, "\nYou enter into a glade with a stone well rising up from the matted \nmoss and leaves of the forest floor. There's no bucket or \nrope left, and when you drop a pebble in it takes a full \nminute before you can hear a faint splash.\n"],
+	[-2, 0]=> [2, "\nScattered across the forest floor are hundreds upon thousands of \ngrey moths, covering everything like a twitching woolen blanket. \nThey seem to be clustered thickest around a large shape \nin the middle of the glade, but you can't make out exactly what it is under there.\n"],
+	[-2, 1]=> [2, "\nA vast and scraggly dead oak stands alone in a clearing in the forest, \nit's massive bare branches creaking in the gentle breeze.\n"],
+	[-2, 2]=> [3, "\nYou come upon a dense thicket of willow trees, greedily thrusting their \nroots into the swampy soil. You can smell the bogs and rotting \nvines of the Tanglewood Swamp close by.\n"],
+	[-2,-1]=> [2, "\nA sweet little rivulet empties into the swamps to the west. But upstream, \nto the east, you see a column of woodsmoke that speaks of \na cozy fireplace and warm food.\n"],
+	[-2,-2]=> [3, "\nNothing in this stretch of forest seems to be moving at all, although \nthe breeze has picked up. It's almost as if the trees were made \nof iron and cunningly painted to disguise their dead, frozen nature.\n"],
+	"tanglewood" => [3, "\nYou find yourself lost in a dismal stretch of Tanglewood Swamp. \nSerptine vines coil themselves around the sickly, twisted trees. \nA heavy sense of unease hangs in the air.\n"]
+	}
+
+	if current_character.location == [0,0]
+		cheesewright_inn(current_character)
+	elsif current_character.location == [-5,1]
+		tower(current_character)
+	elsif current_character.location == [1,-2]
+		witches_hut(current_character)
+	elsif current_character.location == [-1,-1]
+		peddlar(current_character)
+	elsif current_character.location[0].abs > 2 || current_character.location[1].abs > 2
+		location = forest_map["tanglewood"]
+		puts location[1]
+		random_monster(location[0], current_character)
+	else
+		coordinates = current_character.location
+		location = forest_map[coordinates] 
+		puts location[1]
+		random_monster(location[0], current_character)
+	end 
+end
 
 def peddlar(current_character)
 	puts "\nStumbling into a clearing, you see a merry little campfire sending up a fragrant" +
@@ -879,7 +817,61 @@ end
 
 
 
-###### DRIVER CODE #######
+def random_monster(level, current_character)
+	monster_library = {
+		1 => ["Black Adder", 3, 5, 50, 50, 4, "bites you with his poison fangs"],
+		2 => ["Red Weasel", 1, 2, 25, 25, 2, "slashes at you with a dagger"],
+		3 => ["Wharf Rat", 2, 3, 80, 35, 4, "hacks at you with a cutlass"],
+		4 => ["Sewer Rat", 3, 1, 10, 35, 3, "swings a club at you"],
+		5 => ["Fiendish Stoat", 1, 4, 50, 35, 3, "stabs at you with a rapier"], 
+		6 => ["One-Eyed Tomcat", 3, 6, 100, 100, 6, "bats at you with his massive paws"],
+		7 => ["Common Raven", 1, 2, 10, 10, 1, "stabs at you with his crooked beak"], 
+		8 => ["Evil Churchmouse", 1, 2, 80, 20, 1, "swings at you with an axe"],
+	}
+	encounter_probability = level * rand(1..3)
+	if encounter_probability < 3
+		move(current_character)	
+	else
+		monster_selector = rand(1..monster_library.length)
+		monster_stats = monster_library[monster_selector.to_i]
+		current_monster = Monster.new(*monster_stats)
+		puts "\nA #{current_monster.name} leaps at you from the forest."
+		combat(current_character, current_monster)
+	end
+end
+
+def tower(current_character)
+	puts "\nStumbling through the endless vines and treacherous bogs of the Tanglewood" +
+	     "\nSwamp, you see a tower rising up from verdant undergrowth. This must be the" +
+	     "\nplace! The Tower of the Sacred Stilton!!! But there doesn't seem to be a door." +
+	     "\nIf only there were some magical means of ingress..."
+	if current_character.character_spellbook.include? "Magical Mouse Door"
+		puts "\nAha!!! That's it!!! The Magical Mouse Door Spell!!!! Press any key to cast it."
+		gets.chomp
+		puts "\nA magical hole appears in the side of the tower. You can smell the heavenly" +
+		     "\naroma of the most potent acrane cheese known to Mousendom, the Sacred Stilton!" +
+		     "\nYour quest is victorious!!!! Congratulations #{current_character.name}! Your" +
+		     "\nname will go down in Mousey History!!!!" +
+		     "\n" + "\nTHE END"
+		exit
+	else
+		move(current_character)
+	end
+end
+
+def witches_hut(current_character)
+	puts "\nYou come across a curious structure. It appears to be a house standing on\n" + 
+	     "a giant chicken's foot. It's the home of Madame Squeekendorf, Mistress of\n" +
+	     "Magics! The front door is flung wide open, and the Madame squeeks in delight\n" +
+	     "as she see's you approach. 'Ah #{current_character.name}! So good to see you!'\n" +
+	     "\n'I have spells for sale! I can teach you any of these, for a price.'\n"
+	current_character.spell_store
+	move(current_character)
+end
+
+
+
+#============= OLD DRIVER CODE ================
 
 # ed = Character.new("Ed", ["fireball", "featherfall"], 2, 100, 15)
 
@@ -893,8 +885,7 @@ end
 # puts "the attack value is #{black_adder.attack_value}"
 
 
-
-
+#============= CURRENT DRIVER CODE ================
 
 create_or_load = intro
 	if create_or_load == "create_character"
