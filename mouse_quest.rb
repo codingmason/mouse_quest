@@ -1,293 +1,14 @@
-=begin
-	
-========= CLASSES =========
 
-*** Character Class ***
-
-	-Character name
-	-Character Spellbook is an array of spell names
-	-Location equals an array containing an X and Y axis value
-	-Treasure equals the treasure they've accrued
-	-XP is the amount of experience they've acquired
-	-Health is 9 plus the Level 
-	-Level is a floored version of XP rounded to the nearest hundred
-	-Base Level
-	-Master spellbook with each spell:
-		-Name
-		-Description
-		-Flavor text
-		-Attack value
-		-Heal Value
-		-Price
-
-
-========= CLASSES =========
-
-*** Monster Class ***
-	
-	-Monster name
-	-Level 
-	-Treasure
-	-XP is the amount of experience they are worth
-	-Health 
-	-Attack Value
-	-Attack flavor text
-
-
-========= DATABASES =========
-
-*** Saved Character Database ***
-
-	-Character name
-	-Character Spellbook
-	-Money 
-	-XP
-	-Level
-
-
-========= METHODS =========
-
-*** Intro Method ***
-
-	-PUTS text explaining the quest
-	-UNTIL correct input is TRUE
-		-Ask if the user would like to load a character or create a character
-			-IF Load, run Load Character Method. Correct input is TRUE
-			-ELSIF Create, run Create Character Method. Correct input is TRUE
-			-ELSE, PUTS an 'I didn't understand that' message. Correct input is FALSE
-
-*** Create Character Method ***
-
-	-PUTS a question asking for a character name
-	-GETS the response. Assign as a variable 'character name'
-	-UNTIL correct input is TRUE
-		-PUTS a question asking to choose between a few different spells they could use
-		-GETS the response. 
-			-IF response is correct, assign response as variable 'first spell', input is TRUE
-			-ELSE PUTS something like 'I really think you should arm yourself with knowledge'
-	-CREATE an instance of the Character Class called Current Character
-	-Assign character name and spell to Current Character class variables
-	-Query SQLite to to add Character information to the Saved Characters database
-	-Query SQLite to to add spell information to the Spellbook database
-	-Run Cheesewright Inn Method
-
-*** Load Character Method ***
-
-	-Query SQLite to PUTS names of saved characters and their primary keys 
-	-UNTIL correct input is TRUE
-		-PUTS a question ask the player to pick the character number
-		-GETS the response. 
-			-IF response is correct, CREATE an instance of the Character Class 
-			 called Current Character using info queried from Saved Character 
-			 and Saved Inventory databases
-			-ELSE PUTS 'That character does not exist'
-	-PUTS a summary of the character, spellbook, and inventory.
-	-Run Cheesewright Inn Method
-
-
-*** Cheesewright Inn Method ***
-	
-	-UNTIL correct input is TRUE
-		-PUTS a description of the inn. The proprieter, Sam Butterwhiskers, asks if
-	 	they would like to rest or venture forth
-		-GETS response
-			-IF rest, run the Save Method. Correct input is TRUE
-			-ELSIF venture forth, run the Move Method. Correct input is TRUE
-			-ELSE, PUTS an 'I didn't understand that' message. Correct input is FALSE
-
-*** Save Method ***
-	
-	-Query SQLite and push Current Character attributes to Saved Character Database 
-	 with matching name
-	-Query SQLite and push Character Spellbook attributes to Spellbook Database with 
-	 matching name
-	-PUTS question if they would like to continue or not
-		-IF yes, PUTS description of waking up at the inn and have Sam wish them good
-		luck on their quest. Run the Action Method 
-		-ELSE, PUTS a goodbye message and end program
-
-
-*** Action Method ***
-
-	-PUTS would you like to move or cast a spell
-	-GETS answer
-		-IF answer is move, run Move Method
-		-ELSIF answer is spell, run the Cast Spell Method
-		-ELSE PUTS that was not a valid input
-
-*** Cast Spell Method ***
-
-	-PUTS list of spell names in the Character Spellbook
-	-PUTS a message asking for a selection
-	-GETS answer. Use answer as key for Master Spellbook Hash
-		-IF the value of the hash entry is an Attack method PUTS there's no one to fight
-		-ELSE run the value of the hash entry
-	-RUN Move method
-
-*** Move Method ***
-
-	-UNTIL correct input is TRUE
-		-PUTS would you like to move North, East, South, West
-		-GETS answer
-			-IF North add 1 to Current Character's Location y axis. Correct input TRUE 
-			-ELSIF East add 1 to Current Character's Location x axis. Correct input TRUE  	
-			-ELSIF South add -1 to Current Character's Location y axis. Correct input TRUE  	
-			-ELSIF East add -1 to Current Character's Location x axis. Correct input TRUE  	
-			-ELSE PUTS that is not a valid direction. . Correct input FALSE 
-		-PUTS 'You venture' the chosen direction 'and soon come upon...'
-		-Run the New Location Method
-
-*** New Location Method ***
-
-	-IF the Current Character's Location equals the coordinates of a special location,
-	 run that location's method.
-	-ELSIF the Current Character's x axis absolute value is greater than 5, PUTS the
-	 description for the Tanglewood Swamp key of the Forest Map Hash and call the 
-	 method listed in the hash
-	-ELSE PUTS the description for the location Forest Map Hash whose key matches the
-	 Current Character's Location and call the method listed in the hash 
-
-
-*** Random Monster Method ***
-
-	-Takes an argument of an INTEGER between 1 and 3, set that equal to a variable Level
-	-Multiply the Level a RANDOM number between 1 and 3
-		-IF the product is less than 3, call the Action Method
-		-ELSE set a RANDOM number between one and the Monster Hash length
-		-Use that number to select a monster from the Monster Hash
-		-Create new instance of the Monster class with information from Monster Hash and
-		 Level variable 
-		-Set that new Monster equal to Opponent
-		-PUTS a message saying that a such and such level monster has appeared
-		-Run the Combat Method
-
-*** Combat Method ***
-
-	-Takes an argument of Opponent
-	-UNTIL victory = TRUE
-		-PUTS would you like to cast a spell or run away
-		-GETS answer
-			-IF run away, generate RANDOM number between 1 and 10
-				-IF greater than 5, call Action Method
-				-ELSE PUTS "The monster catches you"
-			-ELSE if cast a spell, PUTS 'What spell would you like to cast'
-		-PUTS a list of available spells from the Character Spellbook array
-		-GETS the choice of Spell
-		-Use the spell name to grab the values from the matching spell in the 
-		 Spell Hash. 
-			-PUTS the spell flavor text from the Spell Hash
-			-Call the method from the Spell Hash
-		-IF Opponent health is =< zero, victory = TRUE
-		-ELSE 
-			-PUTS the attack flavor text from the Monster Hash 
-			-Call the Attack method with value from the Monster Hash
-		-IF Current Character health is =< 0,  victory = TRUE
-		-ELSE victory = FALSE
-	-Call the Combat Resolution Method
-
-*** Combat Resolution Method ***	
-
-	-IF Current Character health is =< 0
-		-PUTS a message saying your character died
-		-ABORT
-	-ELSE
-		-PUTS a message that the opponent died
-		-Set a treasure variable equal to the opponent treasure * opponent level
-		-Set an XP variable equal to the opponent XP * opponent level
-		-PUTS a message saying you gained x amount of treasure and XP
-		-Add treasure and XP to Current Character's treasure and XP
-		-Compare Current Character's Level with Current Character's Base Level
-			-IF Level > Base Level, PUTS message 'Congratulations, you are now level X'
-			-Set Current Character's Base Level to Current Character's Level
-			-Set Current Character's Health equal to 9 + Level
-		-Call Action Method
-
-*** Attack Method ***	
-
-	- Create RANDOM hit number between 1 and 10 + the attacker's level
-	- IF hit number is > 5
-		- Calculate damage by a RANDOM numbe between 1 and attackers attack value
-		- Subtract damage from defender's health
-		- PUTS the attacker hit for X points of damage
-		- PUTS defender's health
-	- ELSE PUTS the attacker missed
-
-*** Forest Map Method ***
-	-Create a 3-d array with asterisks for each point on the map and numbers
-	 for named location
-	-When method is called, add brackets around the current asterisk using the location
-	 x and y axis 
-	-print the array
-	-PUTS a map key
-	-GETS to exit and call a MOVE method
-
-*** Heal Method ***
-
-	-Set a variable max health equal to 9 + Current Character Level
-	-Set variable differential equal to max health - Current Character health
-	-Set variable health bonus to 33% of differential
-	-Add health bonus to Current Character health
-	-PUTS you gained health bonus 
-
-*** Unlock Method ***
-
-	-IF Current Character's location is (x,y of the Tower)
-		-PUTS victory text
-		-EXIT
-	-ELSE PUTS nothing happens
-
-
-
-========= Hashes =========
-
-*** Master Spellbook Hash ***
-
-	-Key is the spell name
-	-Values are an array containing:
-		-Flavor text for casting the spell
-		-A method call
-		-A cost
-
-*** Forest Map Hash ***
-	
- -Most keys are a two digit array of x and y axis values
- -The values are an array containing: 
- 		-A description of the location
- 		-A method call, usually a Random Monster Method or an Action Method 
- -One key is a string "Tanglewood Swamp"
-  	-The values are an array containing: 
- 		-A description of the location
- 		-A Random Monster Method 
-
-
-*** Monster Hash ***
-
-	-Keys should be integers from 1 onward
-	-The values are an array containing: 
-		-Name
-		-Treasure
-		-XP 
-		-Health 
-		-Attack Value
-		-Attack flavor text
-=end
-
-
-
-
-
-
-#============= Require Statements ================
+#============= Require Statements ================#
 
 require 'sqlite3'
 require 'faker'
 
-#============= Class Declarations================
+#============= Class Declarations================#
 class Character
 
 	attr_reader :name, :master_spellbook, :id
 	attr_accessor :unlearned_spells, :character_spellbook, :level, :location, :health, :treasure,  :xp
-
 
 	def initialize(id, name, character_spellbook, level, treasure, xp)
 		@id = id
@@ -300,28 +21,31 @@ class Character
 		@treasure = treasure
 		@xp = xp
 		@master_spellbook = {
-		    "Arcane Shopping Spree" => ["Default", "\nDrawing on your sorcerous energies, you summon a \nmagical box from the ethereal plane. When you open \nit, you find a Mystic #{Faker::Commerce.product_name}. Just \nwhat every sorceror's apprentice needs.", 0, 0, 50, "Arcane Shopping Spree"],
+		  "Arcane Shopping Spree" => ["Default", "\nDrawing on your sorcerous energies, you summon a \nmagical box from the ethereal plane. When you open \nit, you find a Mystic #{Faker::Commerce.product_name}. Just \nwhat every sorceror's apprentice needs.", 0, 0, 50, "Arcane Shopping Spree"],
 		 	"Camembert's Sorcerous Habedashery" => ["Default", "\nCalling on your arcane powers, you create a mystical #{Faker::Color.color_name} hat \nto appear on its head. Very dashing.", 0, 0, 50,"Camembert's Sorcerous Habedashery"],
 		 	"Firewhiskers" => ["This spell will scorch your enemies with blazing tendrils of flame", "\nTendrils of fire burst from your hands, singing them a bit, while your enemy erupts in flames", 3, -1, 200, "Firewhiskers"],
 		 	"Squeekendorf's Heavenly Cheese" => ["This spell will create a magical wedge of cheddar that will heal \nyour wounds and fill your belly.", "\nA delicious wheel of mystic cheddar appears before you, and you devour it.", 0, 3, 200, "Squeekendorf's Heavenly Cheese"],
 			"Mystical Mousetraps" => ["This spell will cause ghostly mousetraps to appear and snap on your foes' \ntoes. Very painful.", "\nYour traps go snap snap snap!", 2, 0, 200, "Mystical Mousetraps"],
 			"Furball Fireball" => ["This spell causes a gigantic sphere of flaming mice to appear and roll \nover your enemies.", "\nSummoning a giant ball of flaming fur, you hurl the fiery sphere at your foe.", 5, 0, 500, "Furball Fireball"] ,
-     		"Ice Mice" => ["This spell causes a swarm of spectral Frost Mice to appear, who will cut your \nfoes to ribbons.", "\nA wintry wind fills the air as a swarm of spectral Frost Mice pounce on your enemy", 5, 0, 500, "Ice Mice"],
-     		"Magical Mouse Door" => ["This spell can cause a mystical opening to appear, allowing access \nto the most impregnable places.", "\nA hole appears underneath your foe, twisting his ankle viciously", 2, 0, 1000, "Magical Mouse Door"]
+     	"Ice Mice" => ["This spell causes a swarm of spectral Frost Mice to appear, who will cut your \nfoes to ribbons.", "\nA wintry wind fills the air as a swarm of spectral Frost Mice pounce on your enemy", 5, 0, 500, "Ice Mice"],
+     	"Magical Mouse Door" => ["This spell can cause a mystical opening to appear, allowing access \nto the most impregnable places.", "\nA hole appears underneath your foe, twisting his ankle viciously", 2, 0, 1000, "Magical Mouse Door"]
      	}
-     end
+	end
 
+# Adds hit points to character and sets maximum allowed by character's level
 	def heal(int)
 		@health += int 
 		if @health > (@level + 9)
-			@health = (@level + 9)
+		   @health = (@level + 9)
 		end
 	end
 
+# Adds treasure to character
 	def gain_treasure(int)
 		@treasure += int
 	end
 
+# Adds experience points to character and levels character up
 	def gain_xp(int)
 		@xp += int
 		new_level = (@xp * 0.01) + 1
@@ -332,54 +56,23 @@ class Character
 		end
 	end
 
+# Adds new spell to character's spellbook
 	def learn_spell(new_spell)
 		@character_spellbook << new_spell
 		@unlearned_spells = @unlearned_spells - @character_spellbook
 		puts "\nYou just learned how to cast #{new_spell}"
 	end
 
+# Subtracts from character's treasure
 	def pay(amount)
 		@treasure -= amount
 		puts "You now have #{@treasure} gold pieces.\n"
 	end
 
-	def spell_store
-		valid_input = false
-		until valid_input == true
 
-			puts "\n**Available Spells**\n"
-				@unlearned_spells.each do |spell_name|
-					spell_stats = @master_spellbook[spell_name]
-					puts (@unlearned_spells.index(spell_name) + 1).to_s + ". " + spell_name + " - " +
-					"#{spell_stats[0]} " +
-					"It costs #{spell_stats[4]} gold pieces\n"
-				end
-			puts "\nYou have #{@treasure} gold coins."
-			puts "\nWhat would you like to purchase? Or would you rather [E]xit the shop?"
-			choice = gets.chomp
-			if choice.downcase == "e"
-				puts "\nWell, lovely seeing you #{@name}! Stop by any time."
-				valid_input = true
-			elsif choice.to_i == 0 || choice.to_i > @unlearned_spells.length
-				puts "Don't trifle with me, #{@name}! Choose a spell on offer!"
-			else
-				choice_index = choice.to_i
-				choice_index -= 1
-				spell_name = @unlearned_spells[choice_index]
-				spell_stats = @master_spellbook[spell_name]
-				if spell_stats[4] > @treasure
-					puts "You can't afford that spell"
-				else
-					puts "\n'Excellent choice, #{@name}!' Madame Squeekendorf enthuses." 
-					self.learn_spell(spell_stats[5])
-					self.pay(spell_stats[4])
-				end
-			end
-		end
-	end
-
+# Saves character
 	def save_character
-		db = SQLite3::Database.new("mouse_quest_save_data.db")
+		db = SQLite3::Database.new("save_data.db")
 		create_table_cmd = <<-SQL
 		CREATE TABLE IF NOT EXISTS save_character(
 		  id INTEGER PRIMARY KEY,
@@ -395,6 +88,7 @@ class Character
 		puts "Your character #{@name} has been saved."
 	end
 
+# Subtracts a random amount of hit points based on the monster's level
 	def take_damage(int)
 		@health -= (int - rand(0..int))
 	end
@@ -417,6 +111,7 @@ class Monster
 		@attack_flavor_text = attack_flavor_text
 	end
 
+# Subtracts a random amount of hit points based on the character's level
 	def take_damage(int)
 		@health -= int + rand(0..int)
 	end
@@ -425,7 +120,8 @@ end
 
 #============= Method Declarations================
 
-def character_death(current_character)
+# Script for when a character dies
+def character_death(character)
 	puts "You died!!!!"
 	play_again = true
 	until play_again == false
@@ -438,22 +134,23 @@ def character_death(current_character)
 					else
 						character_stats = load_character
 					end
-				current_character = Character.new(*character_stats)
-				cheesewright_inn(current_character)
+				character = Character.new(*character_stats)
+				cheesewright_inn(character)
 			elsif choice.downcase == "n"
-				puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n\n"
+				puts "\nGoodbye #{character.name}! You were a brave and valiant mouse.\n\n"
 				exit
 			else puts "\nI'm sorry, I didn't understand that."
 			end
 		end
 end
 
-
-def cheesewright_inn(current_character)
+# Script for the initial location of the character as well as the place 
+# in the game where you can rest, heal, and save your character.
+def cheesewright_inn(character)
 
 	puts "\nThe Cheesewright Inn is a cheerful place, full of warmth, clean beds, \n" +
          "and the best blue-veined Wenslydale to be found in the whole Forest. The \n" +
-         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{current_character.name}!\n" +
+         "proprieter, Sam Butterwhiskers, waves to you as you enter. 'Ah, #{character.name}!\n" +
          "Good to see you again!'"
     valid_input = false
 	until valid_input == TRUE
@@ -462,65 +159,66 @@ def cheesewright_inn(current_character)
     	if answer.downcase == "r"
     		puts "\nWell now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
     		     "feel better once you've slept a bit.\n\n"
-    		current_character.heal(10)
-    		current_character.save_character
-    		puts "After resting, you now have #{current_character.health} hit points."
-    		continue(current_character)
+    		character.heal(10)
+    		character.save_character
+    		puts "After resting, you now have #{character.health} hit points."
+    		continue(character)
     		puts "\nAfter a short nap, you feel fit as a fiddle. Sam is delighted to see \n" +
-    		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!' \n" +
+    		     "you as you walk back down to the Common Room. 'Ah, #{character.name}!' \n" +
     		     "Sam beams at you, 'You look ten times the mouse you did before.'\n" 
     		valid_input = false
     	elsif answer.downcase == "v"
     		puts "\nSam chuckles. 'Well then, good luck my brave little friend,' and waves \n" +
     			 "as you exit the inn.\n"
     			  valid_input = true
-    			  move(current_character)
+    			  move(character)
     	else puts "\n'Eh?!? Speak up! I didn't understand a word of that.'\n"
     		 valid_input = false
     	end
     end
 end
 
-def combat(current_character, current_monster)
+# Method for combating monsters using spells
+def combat(character, current_monster)
 	victory = false
 	until victory == true
-		puts "\nYou have #{current_character.health} hit points. The #{current_monster.name} has #{current_monster.health}."
+		puts "\nYou have #{character.health} hit points. The #{current_monster.name} has #{current_monster.health}."
 		puts "\nWould you like to cast a [S]pell or try to [R]un away?"
 		choice = gets.chomp
 		if choice.downcase == "r"
 			escape_probability = rand(1..10)
 			if escape_probability > 5
 				puts "\nYou manage to escape the #{current_monster.name} by the skin of your teeth."
-				move(current_character)
+				move(character)
 			else puts "\nOh no! The #{current_monster.name} catches you!"
-				current_character.take_damage(current_monster.attack_value)
-				if current_character.health <= 0
-					character_death(current_character)
+				character.take_damage(current_monster.attack_value)
+				if character.health <= 0
+					character_death(character)
 				end
 			end
 		elsif choice.downcase == "s"
 			valid_input = false
 			until valid_input == true
 				puts "\nWhat spell would you like to cast?"
-				current_character.character_spellbook.each do |spell|
-					puts (current_character.character_spellbook.index(spell) + 1).to_s + ". " + spell 
+				character.character_spellbook.each do |spell|
+					puts (character.character_spellbook.index(spell) + 1).to_s + ". " + spell 
 				end
 				spell_choice = gets.chomp
 				spell_choice = spell_choice.to_i - 1
-				if spell_choice < current_character.character_spellbook.length && spell_choice >= 0
-					puts "\nYou cast #{current_character.character_spellbook[spell_choice]} at the #{current_monster.name}."
-					spell_name = current_character.character_spellbook[spell_choice]
-					spell_stats = current_character.master_spellbook[spell_name]
+				if spell_choice < character.character_spellbook.length && spell_choice >= 0
+					puts "\nYou cast #{character.character_spellbook[spell_choice]} at the #{current_monster.name}."
+					spell_name = character.character_spellbook[spell_choice]
+					spell_stats = character.master_spellbook[spell_name]
 					puts spell_stats[1]
 					current_monster.take_damage(spell_stats[2])
-					current_character.heal(spell_stats[3])
-					puts "\nYou currently have #{current_character.health} hit points. The #{current_monster.name} has #{current_monster.health} hit points."
+					character.heal(spell_stats[3])
+					puts "\nYou currently have #{character.health} hit points. The #{current_monster.name} has #{current_monster.health} hit points."
 						if current_monster.health <= 0
 							puts "\nYou have slain the #{current_monster.name}."
 							victory = true
-							combat_resolution(current_character, current_monster)
-						elsif current_character.health <= 0
-							character_death(current_character)
+							combat_resolution(character, current_monster)
+						elsif character.health <= 0
+							character_death(character)
 						else 
 							valid_input = true
 						end
@@ -531,22 +229,24 @@ def combat(current_character, current_monster)
 		else puts "\nI'm sorry, I know it's scary, but if you don't enter a real choice, you forfeit your turn."
 		end
 		puts "\nThe #{current_monster.name} #{current_monster.attack_flavor_text}"
-		current_character.take_damage(current_monster.attack_value)
-		if current_character.health <= 0
-			character_death(current_character)
+		character.take_damage(current_monster.attack_value)
+		if character.health <= 0
+			character_death(character)
 		end
 	end
 end
 
-
-def combat_resolution(current_character, current_monster)
-	current_character.gain_xp(current_monster.xp)
+# Method for resolving the effects of combat
+def combat_resolution(character, current_monster)
+	character.gain_xp(current_monster.xp)
 		puts "\nYou gain #{current_monster.xp} experience points."
-	current_character.gain_treasure(current_monster.treasure)
+	character.gain_treasure(current_monster.treasure)
 		puts "You find #{current_monster.treasure} pieces of gold on the body of the #{current_monster.name}."
-	    puts "You now have #{current_character.treasure} pieces of gold and have #{current_character.xp} points of experience."
-	move(current_character)
+	    puts "You now have #{character.treasure} pieces of gold and have #{character.xp} points of experience."
+	move(character)
 end
+
+# Creates a new character
 def create_character
 	puts "\nWhat is the name of the mouse you would like to create?" + "\n\n"
 	character_name = gets.chomp
@@ -572,7 +272,7 @@ def create_character
 		else puts "I'm sorry, I didn't understand that."
 		end
 	end
-    db = SQLite3::Database.new("mouse_quest_save_data.db")
+    db = SQLite3::Database.new("save_data.db")
     id_array = db.execute("SELECT MAX(id) FROM save_character")
     id = id_array[0][0]
     id = id.to_i
@@ -581,13 +281,14 @@ def create_character
 	character_stats
 end
 
-def continue(current_character)
+# Offers the user a chance to resume play after saving
+def continue(character)
 	valid_input = false
 	until valid_input == true
 		puts "\nWould you like to continue your adventure? [Y]es or [N]o?"
     	choice = gets.chomp
     	if choice.downcase == "n"
-			puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n\n"
+			puts "\nGoodbye #{character.name}! You were a brave and valiant mouse.\n\n"
 			exit
 		elsif choice.downcase == "y"
 			puts "\nExcellent! On to the adventure!!!"
@@ -598,27 +299,23 @@ def continue(current_character)
     end
 end
 
-
-def forest_map(current_character)
+# Keeps track of the character's location and displays a map of the forest
+def forest_map(character)
 	map_array = [
 		["*", "*", "*", "*", "*"], 
 		["4", "*", "*", "*", "*"], 
 		["*", "*", "1", "*", "*"], 
 		["*", "3", "*", "*", "*"], 
-		["*", "*", "*", "2", "*"]
-	]
-
-	x_axis = current_character.location[0]
-	y_axis = current_character.location[1]
-	
+		["*", "*", "*", "2", "*"]]
+	x_axis = character.location[0]
+	y_axis = character.location[1]
 	if x_axis.abs > 2 || y_axis.abs > 2
 		puts "You're off the map!!!! Lost in the Tanglewood Swamp! Now, if only you could remember" +
-			 "\nhow you got here, maybe you could back-track." 
+			"\nhow you got here, maybe you could back-track." 
 		gets
-		move(current_character)
+		move(character)
 	else
 		map_array[(y_axis + 3) * -1].to_a[(x_axis + 2)] = "X"
-
 		puts "\nMAP OF THE FOREST" +
 		     "\n================="
 		map_array.each {|location| puts location.join("   ") }
@@ -629,13 +326,13 @@ def forest_map(current_character)
 		     "\n4. The Dead Oak\n" +
 		     "\nPress any key to exit" 
 		gets
-		move(current_character)
+		move(character)
 	end
 end
 
+# Displays intro text and allows users to create, load, or delete a character
 def intro
-# Initiate Database 
-	db = SQLite3::Database.new("mouse_quest_save_data.db")
+	db = SQLite3::Database.new("save_data.db")
 	create_table_cmd = <<-SQL
 	CREATE TABLE IF NOT EXISTS save_character(
 		 id INTEGER PRIMARY KEY,
@@ -692,11 +389,11 @@ def intro
 	end
 end
 
-
+# Loads an existing character
 def load_character
 	valid_input = false
 	until valid_input == true
-		db = SQLite3::Database.new("mouse_quest_save_data.db")
+		db = SQLite3::Database.new("save_data.db")
 		puts "Which character would you like to load?"
 
 		id = db.execute("SELECT id FROM save_character")
@@ -718,36 +415,37 @@ def load_character
 	end
 end
 
-def move(current_character)
+# Changes the character's location
+def move(character)
 	valid_input = false
-	x_axis = current_character.location[0]
-	y_axis = current_character.location[1]
+	x_axis = character.location[0]
+	y_axis = character.location[1]
 	until valid_input == TRUE
 		puts "\nWould you like to travel [N]orth, [E]ast, [S]outh, [W]est, look at the [M]ap, or [Q]uit?\n"
 		answer = gets.chomp
 		if answer.downcase == "n"
 			puts "\nYou travel north..."
-			current_character.location[1] = y_axis + 1
+			character.location[1] = y_axis + 1
 			valid_input = true
 		elsif answer.downcase == "e"
 			puts "\nYou travel east..."
-			current_character.location[0] = x_axis + 1
+			character.location[0] = x_axis + 1
 			valid_input = true
 		elsif answer.downcase == "s"
 			puts "\nYou travel south..."
-			current_character.location[1] = y_axis - 1
+			character.location[1] = y_axis - 1
 			valid_input = true
 		elsif answer.downcase == "w"
 			puts "\nYou travel west..."
-			current_character.location[0] = x_axis - 1	
+			character.location[0] = x_axis - 1	
 			valid_input = true	
 		elsif answer.downcase == "m"
-			forest_map(current_character)
+			forest_map(character)
 		elsif answer.downcase == "q"
 			puts "Are you sure you want to quit? [Y]es or [N]o?"
 			quit_answer = gets.chomp
 				if quit_answer.downcase == "y"
-			  		puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n\n"
+			  		puts "\nGoodbye #{character.name}! You were a brave and valiant mouse.\n\n"
 					exit
 				else
 					puts "The adventure continues!!!"
@@ -757,11 +455,11 @@ def move(current_character)
 			valid_input = false
 		end
 	end
-	new_location(current_character)
+	new_location(character)
 end
 
-
-def new_location(current_character)
+# Displays location information when a character enters a new place
+def new_location(character)
 	forest_map = {
 	[0,1]  => [1, "\nYou come upon a cheerful glade in the forest. Wildflowers bloom in \nthe dappled sunlight. You detect the faint smell of cheese to the South.\n"],
 	[0,2]  => [2, "\nYou creep into a silent stretch of the woods. Even the crickets have \nstopped chirping here. You shudder. There might be owls about.\n"],
@@ -787,28 +485,28 @@ def new_location(current_character)
 	[-2,-2]=> [3, "\nNothing in this stretch of forest seems to be moving at all, although \nthe breeze has picked up. It's almost as if the trees were made \nof iron and cunningly painted to disguise their dead, frozen nature.\n"],
 	"tanglewood" => [3, "\nYou find yourself lost in a dismal stretch of Tanglewood Swamp. \nSerptine vines coil themselves around the sickly, twisted trees. \nA heavy sense of unease hangs in the air.\n"]
 	}
-
-	if current_character.location == [0,0]
-		cheesewright_inn(current_character)
-	elsif current_character.location == [-5,1]
-		tower(current_character)
-	elsif current_character.location == [1,-2]
-		witches_hut(current_character)
-	elsif current_character.location == [-1,-1]
-		peddlar(current_character)
-	elsif current_character.location[0].abs > 2 || current_character.location[1].abs > 2
+	if character.location == [0,0]
+		cheesewright_inn(character)
+	elsif character.location == [-5,1]
+		tower(character)
+	elsif character.location == [1,-2]
+		witches_hut(character)
+	elsif character.location == [-1,-1]
+		peddlar(character)
+	elsif character.location[0].abs > 2 || character.location[1].abs > 2
 		location = forest_map["tanglewood"]
 		puts location[1]
-		random_monster(location[0], current_character)
+		random_monster(location[0], character)
 	else
-		coordinates = current_character.location
+		coordinates = character.location
 		location = forest_map[coordinates] 
 		puts location[1]
-		random_monster(location[0], current_character)
+		random_monster(location[0], character)
 	end 
 end
 
-def peddlar(current_character)
+# Script that plays out when visiting the Peddlers Camp. 
+def peddlar(character)
 	puts "\nStumbling into a clearing, you see a merry little campfire sending up a fragrant" +
 	     "\ncolumn of woodsmoke. Beside it is a brightly painted caravan, and no sooner do you" +
 	     "\nenter into the light of the fire than an aged chipmunk steps out of the wagon. 'Hello!'" +
@@ -821,12 +519,12 @@ def peddlar(current_character)
 	    puts "\nIs it a deal? [Y]es or [N]o?"
 		answer = gets.chomp
 		if answer.downcase == "y"
-			if current_character.treasure < 500
+			if character.treasure < 500
 				puts "'Gah!!! You don't even have the coin to buy this information with. Come back when you're richer."
 				valid_input = true
 			else
 				puts "\n'The treasure lies three leagues west of the Dead Oak. Fare thee well, traveler!'"
-				current_character.pay(500)
+				character.pay(500)
 				valid_input = true
 			end
 		elsif answer.downcase == "n"
@@ -836,12 +534,11 @@ def peddlar(current_character)
 			puts "\nEh?!?!! I didn't understand that one bit."
 		end
 	end
-	move(current_character)
+	move(character)
 end
 
-
-
-def random_monster(level, current_character)
+# Generates a random monster for the player to encounter when moving to a new location
+def random_monster(level, character)
 	monster_library = {
 		1 => ["Black Adder", 3, 5, 50, 50, 4, "bites you with his poison fangs"],
 		2 => ["Red Weasel", 1, 2, 25, 25, 2, "slashes at you with a dagger"],
@@ -854,59 +551,81 @@ def random_monster(level, current_character)
 	}
 	encounter_probability = level * rand(1..3)
 	if encounter_probability < 3
-		move(current_character)	
+		move(character)	
 	else
 		monster_selector = rand(1..monster_library.length)
 		monster_stats = monster_library[monster_selector.to_i]
 		current_monster = Monster.new(*monster_stats)
 		puts "\nA #{current_monster.name} leaps at you from the forest."
-		combat(current_character, current_monster)
+		combat(character, current_monster)
 	end
 end
 
-def tower(current_character)
+# Runs script for buying spells at the Witches Hut
+def spell_store(character)
+	valid_input = false
+	until valid_input == true
+		puts "\n**Available Spells**\n"
+			character.unlearned_spells.each do |spell_name|
+				spell_stats = character.master_spellbook[spell_name]
+				puts (character.unlearned_spells.index(spell_name) + 1).to_s + ". " + spell_name + " - " +
+				"#{spell_stats[0]} " +
+				"It costs #{spell_stats[4]} gold pieces\n"
+			end
+		puts "\nYou have #{character.treasure} gold coins."
+		puts "\nWhat would you like to purchase? Or would you rather [E]xit the shop?"
+		choice = gets.chomp
+		if choice.downcase == "e"
+			puts "\nWell, lovely seeing you #{character.name}! Stop by any time."
+			valid_input = true
+		elsif choice.to_i == 0 || choice.to_i > character.unlearned_spells.length
+			puts "Don't trifle with me, #{character.name}! Choose a spell on offer!"
+		else
+			choice_index = choice.to_i
+			choice_index -= 1
+			spell_name = character.unlearned_spells[choice_index]
+			spell_stats = character.master_spellbook[spell_name]
+			if spell_stats[4] > character.treasure
+				puts "\nYou can't afford that spell!"
+			else
+				puts "\n'Excellent choice, #{character.name}!' Madame Squeekendorf enthuses." 
+				character.learn_spell(spell_stats[5])
+				character.pay(spell_stats[4])
+			end
+		end
+	end
+end
+
+# Runs script for the Tower, the secret location the player is trying to find
+def tower(character)
 	puts "\nStumbling through the endless vines and treacherous bogs of the Tanglewood" +
 	     "\nSwamp, you see a tower rising up from verdant undergrowth. This must be the" +
 	     "\nplace! The Tower of the Sacred Stilton!!! But there doesn't seem to be a door." +
 	     "\nIf only there were some magical means of ingress..."
-	if current_character.character_spellbook.include? "Magical Mouse Door"
+	if character.character_spellbook.include? "Magical Mouse Door"
 		puts "\nAha!!! That's it!!! The Magical Mouse Door Spell!!!! Press any key to cast it."
 		gets.chomp
 		puts "\nA magical hole appears in the side of the tower. You can smell the heavenly" +
 		     "\naroma of the most potent acrane cheese known to Mousedom, the Sacred Stilton!" +
-		     "\nYour quest is victorious!!!! Congratulations #{current_character.name}! Your" +
+		     "\nYour quest is victorious!!!! Congratulations #{character.name}! Your" +
 		     "\nname will go down in Mousey History!!!!" +
 		     "\n" + "\nTHE END"
 		exit
 	else
-		move(current_character)
+		move(character)
 	end
 end
 
-def witches_hut(current_character)
+# Runs script for the Witches Hut
+def witches_hut(character)
 	puts "\nYou come across a curious structure. It appears to be a house standing on\n" + 
 	     "a giant chicken's foot. It's the home of Madame Squeekendorf, Mistress of\n" +
 	     "Magics! The front door is flung wide open, and the Madame squeeks in delight\n" +
-	     "as she see's you approach. 'Ah #{current_character.name}! So good to see you!'\n" +
+	     "as she see's you approach. 'Ah #{character.name}! So good to see you!'\n" +
 	     "\n'I have spells for sale! I can teach you any of these, for a price.'\n"
-	current_character.spell_store
-	move(current_character)
+	spell_store(character)
+	move(character)
 end
-
-
-
-#============= OLD DRIVER CODE ================
-
-# ed = Character.new("Ed", ["fireball", "featherfall"], 2, 100, 15)
-
-# puts ed.character_spellbook[0]
-
-# black_adder = Monster.new("black_adder", 2, 5, 50, 50, 4, "bites you with his poison fangs")
-
-# puts "the health is #{black_adder.health}"
-# puts "the treasure is #{black_adder.treasure}"
-# puts "the xp is #{black_adder.xp}"
-# puts "the attack value is #{black_adder.attack_value}"
 
 
 #============= CURRENT DRIVER CODE ================
@@ -917,6 +636,6 @@ create_or_load = intro
 	else
 		character_stats = load_character
 	end
-current_character = Character.new(*character_stats)
-cheesewright_inn(current_character)
+character = Character.new(*character_stats)
+cheesewright_inn(character)
 
