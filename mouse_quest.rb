@@ -305,7 +305,7 @@ class Character
 		 	"Firewhiskers" => ["This spell will scorch your enemies with blazing tendrils of flame", "\nTendrils of fire burst from your hands, singing them a bit, while your enemy erupts in flames", 3, -1, 200, "Firewhiskers"],
 		 	"Squeekendorf's Heavenly Cheese" => ["This spell will create a magical wedge of cheddar that will heal \nyour wounds and fill your belly.", "\nA delicious wheel of mystic cheddar appears before you, and you devour it.", 0, 3, 200, "Squeekendorf's Heavenly Cheese"],
 			"Mystical Mousetraps" => ["This spell will cause ghostly mousetraps to appear and snap on your foes' \ntoes. Very painful.", "\nYour traps go snap snap snap!", 2, 0, 200, "Mystical Mousetraps"],
-			"Furball Fireball" => ["This spell causes a gigantic sphere of flaming mice to appear and roll \nover your enemies", "\nSummoning a giant ball of flaming fur, you hurl the fiery sphere at your foe.", 5, 0, 500, "Furball Fireball"] ,
+			"Furball Fireball" => ["This spell causes a gigantic sphere of flaming mice to appear and roll \nover your enemies.", "\nSummoning a giant ball of flaming fur, you hurl the fiery sphere at your foe.", 5, 0, 500, "Furball Fireball"] ,
      		"Ice Mice" => ["This spell causes a swarm of spectral Frost Mice to appear, who will cut your \nfoes to ribbons.", "\nA wintry wind fills the air as a swarm of spectral Frost Mice pounce on your enemy", 5, 0, 500, "Ice Mice"],
      		"Magical Mouse Door" => ["This spell can cause a mystical opening to appear, allowing access \nto the most impregnable places.", "\nA hole appears underneath your foe, twisting his ankle viciously", 2, 0, 1000, "Magical Mouse Door"]
      	}
@@ -464,8 +464,9 @@ def cheesewright_inn(current_character)
     		     "feel better once you've slept a bit.\n\n"
     		current_character.heal(10)
     		current_character.save_character
+    		puts "After resting, you now have #{current_character.health} hit points."
     		continue(current_character)
-    		puts "\nAfter a short rest, you feel fit as a fiddle. Sam is delighted to see \n" +
+    		puts "\nAfter a short nap, you feel fit as a fiddle. Sam is delighted to see \n" +
     		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!' \n" +
     		     "Sam beams at you, 'You look ten times the mouse you did before.'\n" 
     		valid_input = false
@@ -611,7 +612,8 @@ def forest_map(current_character)
 	y_axis = current_character.location[1]
 	
 	if x_axis.abs > 2 || y_axis.abs > 2
-		puts "You're off the map!!!! Lost in the Tanglewood Swamp!" 
+		puts "You're off the map!!!! Lost in the Tanglewood Swamp! Now, if only you could remember" +
+			 "\nhow you got here, maybe you could back-track." 
 		gets
 		move(current_character)
 	else
@@ -768,7 +770,7 @@ def new_location(current_character)
 	[1,0]  => [0, "\nThe sight of a tumbledown old cottage greets you as you round the \nbend. It's owner, a grey-whiskered old mouse is sitting on the \nporch, whistling a tune. He tips his hat to you as you \npass. You can see a well-trodden path to the West.\n"],
 	[1,1]  => [1, "\nYou find yourself in a mossy dell, shaded with giant ferns that \ngrow thick and verdant. A cool mist hangs in the air, and you \nthink you can catch glimpses of something darting through the ferns.\n"],
 	[1,2]  => [2, "\nThis is a dark stretch of the forest. The ferns have grown to  \ngargantuan proportions, choking out the sunlight. A flint-eyed raven \nsits staring in the darkness at you.\n"],
-	[1,-1] => [1, "\nYou cross a merry little stream, glinting in the sunlight. And you \nthink you can make out, almost playing a countermelody stream \nthe faint strains of a tin whistle coming from the South.\n"],
+	[1,-1] => [1, "\nYou cross a merry little stream, glinting in the sunlight. And you \nthink you can make out, almost playing a countermelody to the \nstream the faint strains of a tin whistle coming from the South.\n"],
 	[2,0]  => [2, "\nA broken tower pokes its head out of the tangled briars and fallen \nleaves. It looks old beyond reckoning, the cracked stones riddled \nwith lichen. You can't imagine what could have caused it to fall.\n"],
 	[2,1]  => [2, "\nYou wander into an area of the forest still ravaged by a recent \nwildfire. Blackened stumps have given way to scrub brush and a tangle \nof new vines, coiling up out of the blackened husks of great trees.\n"],
 	[2,2]  => [0, "\nYou find a clear and still pool of water, shining like a mirror  \nin the midday sun. There seems to be some sort of crumbled \nstatuary scattered in the depths. You can make out a stone \nhand, with what look to be talons, reaching out towards the surface.\n"],
