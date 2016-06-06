@@ -697,7 +697,17 @@ def character_death(current_character)
 		end
 end
 
-
+=begin
+	
+==== Forest Map Method =====
+	-Create a 3-d array with asterisks for each point on the map and numbers
+	 for named location
+	-When method is called, add brackets around the current asterisk using the location
+	 x and y axis 
+	-print the array
+	-PUTS a map key
+	-GETS to exit and call a MOVE method
+=end
 
 
 
