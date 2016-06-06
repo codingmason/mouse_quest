@@ -554,8 +554,7 @@ def new_location(current_character)
 
 	if current_character.location == [0,0]
 		cheesewright_inn(current_character)
-	elsif current_character.location == [1,0]
-		# [-5,1]
+	elsif current_character.location == [-5,1]
 		tower(current_character)
 	elsif current_character.location == [1,-2]
 		witches_hut(current_character)
@@ -741,20 +740,27 @@ def peddlar(current_character)
 	     "\nenter into the light of the fire than an aged chipmunk steps out of the wagon. 'Hello!'" +
 	     "\nhe says, 'Make yourself comfortable, friend. I'm a peddlar, but the only stock I have is" +
 	     "\ninformation. I know where a secret treasure is hidden, but you'll have to cross my palm" +
-	     "\nwith gold to get me to tell!'\n" + "\n"
+	     "\nwith gold to get me to tell!'\n" + 
 	     "\nIt will cost you perfectly reasonable 500 gold pieces."
 	valid_input = false
 	until valid_input == true
 	    puts "\nIs it a deal? [Y]es or [N]o?"
 		answer = gets.chomp
 		if answer.downcase == "y"
-			puts "\n'The treasure lies three leagues west of the Dead Oak. Fare thee well, traveler!'"
-			valid_input = true
+			if current_character.treasure < 500
+				puts "'Gah!!! You don't even have the coin to buy this information with. Come back when you're richer."
+				valid_input = true
+			else
+				puts "\n'The treasure lies three leagues west of the Dead Oak. Fare thee well, traveler!'"
+				current_character.pay(500)
+				valid_input = true
+			end
 		elsif answer.downcase == "n"
 			puts "\n'Well then, stranger. Your loss! But come again any time. Now if you'll excuse me...'"
 			valid_input = true
 		else
 			puts "\nEh?!?!! I didn't understand that one bit."
+		end
 	end
 	move(current_character)
 end
