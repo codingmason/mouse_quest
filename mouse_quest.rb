@@ -279,16 +279,17 @@ require 'faker'
 
 class Character
 
-	attr_reader :name, :master_spellbook
+	attr_reader :name, :master_spellbook, :id
 	attr_accessor :unlearned_spells, :character_spellbook, :level, :location, :health, :treasure,  :xp
 
 
-	def initialize(name, character_spellbook, level, treasure, xp)
+	def initialize(id, name, character_spellbook, level, treasure, xp)
+		@id = id
 		@name = name
 		@character_spellbook = character_spellbook
 		@unlearned_spells = ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", "Firewhiskers", "Squeekendorf's Heavenly Cheese", "Mystical Mousetraps", "Furball Fireball", "Ice Mice", "Magical Mouse Door"] - @character_spellbook
 		@location = [0,0]
-		@level = level 
+		@level = level
 		@health = level + 9
 		@treasure = treasure
 		@xp = xp
@@ -381,7 +382,6 @@ class Character
 
 	def save_character
 		db = SQLite3::Database.new("mouse_quest_save_data.db")
-		db.results_as_hash = true
 
 		create_table_cmd = <<-SQL
 		CREATE TABLE IF NOT EXISTS save_character(
@@ -394,7 +394,9 @@ class Character
 		)
 		SQL
 		db.execute(create_table_cmd)
-		db.execute("INSERT INTO save_character(name, character_spellbook, level, treasure, xp) VALUES (?, ?, ?, ?, ?)", [@name, @character_spellbook.to_s, @level, @treasure, @xp]) 
+
+
+		db.execute("INSERT OR REPLACE INTO save_character(id, name, character_spellbook, level, treasure, xp) VALUES (?, ?, ?, ?, ?, ?)", [@id, @name, @character_spellbook.to_s, @level, @treasure, @xp]) 
 		puts "Your character #{@name} has been saved."
 	end
 end
@@ -407,6 +409,7 @@ class Monster
 	def initialize(name, level, health, treasure, xp, attack_value,	attack_flavor_text)
 		@name = name
 		@level = level
+		@treasure = treasure
 		@health = health + (level * 2)
 		@treasure = rand(1..treasure) * level
 		@xp = (xp * level) - rand(1..xp)
@@ -475,14 +478,12 @@ def load_character
 			valid_input = true
 			character_array = db.execute("SELECT * FROM save_character WHERE id='#{answer.to_i}'")
 		    character_stats = character_array[0] 
-		    character_stats.shift
-		    character_spellbook = character_stats[1].split(", ")
-		    character_stats[1] = character_spellbook
+		    character_spellbook = character_stats[2].split(", ")
+		    character_stats[2] = character_spellbook
 		    return character_stats
 		end
 	end
 end
-
 
 
 def create_character
@@ -510,7 +511,12 @@ def create_character
 		else puts "I'm sorry, I didn't understand that."
 		end
 	end
-	character_stats = [character_name, ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", spell_choice], 1, 2000, 0]
+    db = SQLite3::Database.new("mouse_quest_save_data.db")
+    id_array = db.execute("SELECT MAX(id) FROM save_character")
+    id = id_array[0][0]
+    id = id.to_i
+    id += 1
+	character_stats = [id, character_name, ["Arcane Shopping Spree", "Camembert's Sorcerous Habedashery", spell_choice], 1, 2000, 0]
 	character_stats
 end
 
