@@ -498,7 +498,7 @@ def move(current_character)
 	x_axis = current_character.location[0]
 	y_axis = current_character.location[1]
 	until valid_input == TRUE
-		puts "\nWould you like to travel [N]orth, [E]ast, [S]outh, or [W]est?\n"
+		puts "\nWould you like to travel [N]orth, [E]ast, [S]outh, [W]est, or look at the [M]ap?\n"
 		answer = gets.chomp
 		if answer.downcase == "n"
 			puts "\nYou travel north..."
@@ -516,6 +516,8 @@ def move(current_character)
 			puts "\nYou travel west..."
 			current_character.location[0] = x_axis - 1	
 			valid_input = true	
+		elsif answer.downcase == "m"
+			forest_map(current_character)
 		else puts "\nThat's not a valid direction!"
 			valid_input = false
 		end
@@ -711,8 +713,36 @@ end
 
 
 
-def forest_map
+def forest_map(current_character)
+	map_array = [
+		["*", "*", "*", "*", "*"], 
+		["4", "*", "*", "*", "*"], 
+		["*", "*", "1", "*", "*"], 
+		["*", "3", "*", "*", "*"], 
+		["*", "*", "*", "2", "*"]
+	]
 
+	x_axis = current_character.location[0]
+	y_axis = current_character.location[1]
+	
+	if x_axis.abs > 2 || y_axis.abs > 2
+		puts "You're off the map!!!! Lost in the Tanglewood Swamp!" 
+		gets
+		move(current_character)
+	else
+		map_array[(y_axis + 3) * -1].to_a[(x_axis + 2)] = "X"
+
+		puts "\nMAP OF THE FOREST\n"
+		map_array.each {|location| puts location.join(" ") }
+		puts "\n[X] Your current location" +
+			 "\n1. The Cheesewright Inn" +
+		     "\n2. Madame Squeekendorf's House of Wonders" +
+		     "\n3. The Peddler's Wagon" +
+		     "\n4. The Dead Oak\n" +
+		     "\nPress any key to exit" 
+		gets
+		move(current_character)
+	end
 end
 
 
