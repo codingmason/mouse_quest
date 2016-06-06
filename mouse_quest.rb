@@ -330,8 +330,6 @@ class Character
 		@treasure += int
 	end
 
-
-
 	def learn_spell(new_spell)
 		@character_spellbook << new_spell
 		@unlearned_spells = @unlearned_spells - @character_spellbook
@@ -381,26 +379,24 @@ class Character
 		end
 	end
 
-def save_character
+	def save_character
+		db = SQLite3::Database.new("mouse_quest_save_data.db")
+		db.results_as_hash = true
 
-	db = SQLite3::Database.new("mouse_quest_save_data.db")
-	db.results_as_hash = true
-
-	create_table_cmd = <<-SQL
-	CREATE TABLE IF NOT EXISTS save_character(
-	  id INTEGER PRIMARY KEY,
-	  name VARCHAR(100),
-	  character_spellbook VARCHAR(500),
-	  level INTEGER,
-	  treasure INTEGER,
-	  xp INTEGER
-	)
-	SQL
-	db.execute(create_table_cmd)
-	db.execute("INSERT INTO save_character(name, character_spellbook, level, treasure, xp) VALUES (?, ?, ?, ?, ?)", [@name, @character_spellbook.to_s, @level, @treasure, @xp]) 
-	puts "Your character #{@name} has been saved."
-end
-
+		create_table_cmd = <<-SQL
+		CREATE TABLE IF NOT EXISTS save_character(
+		  id INTEGER PRIMARY KEY,
+		  name VARCHAR(100),
+		  character_spellbook VARCHAR(500),
+		  level INTEGER,
+		  treasure INTEGER,
+		  xp INTEGER
+		)
+		SQL
+		db.execute(create_table_cmd)
+		db.execute("INSERT INTO save_character(name, character_spellbook, level, treasure, xp) VALUES (?, ?, ?, ?, ?)", [@name, @character_spellbook.to_s, @level, @treasure, @xp]) 
+		puts "Your character #{@name} has been saved."
+	end
 end
 
 class Monster
@@ -427,6 +423,22 @@ end
 # Method Declarations
 
 def intro
+
+	db = SQLite3::Database.new("mouse_quest_save_data.db")
+	db.results_as_hash = true
+
+	create_table_cmd = <<-SQL
+	CREATE TABLE IF NOT EXISTS save_character(
+		 id INTEGER PRIMARY KEY,
+		 name VARCHAR(100),
+		 character_spellbook VARCHAR(500),
+		 level INTEGER,
+		 treasure INTEGER,
+		 xp INTEGER
+		)
+		SQL
+	db.execute(create_table_cmd)
+
 	puts "\nWelcome brave adventurer! Etc etc"
 	valid_input = FALSE
 	until valid_input == TRUE
@@ -435,13 +447,42 @@ def intro
 		if answer.downcase == "c"
 			valid_input = TRUE
 			return "create_character"
+		elsif answer.downcase == "l" && db.execute("SELECT * FROM save_character WHERE id='1' ") == []
+			puts "You don't have any saved characters."
 		elsif answer.downcase == "l"
 			valid_input = TRUE
 			return "load_character"
-		else puts "\nI'm sorry, I didn't understand that. Please enter a valid input."
+		else 
+			puts "\nI'm sorry, I didn't understand that. Please enter a valid input."
 		end
 	end
 end
+
+def load_character
+	valid_input = false
+	until valid_input == true
+		db = SQLite3::Database.new("mouse_quest_save_data.db")
+		puts "Which character would you like to load?"
+
+		id = db.execute("SELECT id FROM save_character")
+		name = db.execute("SELECT name FROM save_character")
+		puts id.zip(name).join(" ")
+		answer = gets.chomp
+
+		if answer.to_i == 0 || answer.to_i > id.length
+			puts "I'm sorry, I didn't undersand you. Pick a valid number"
+		else
+			valid_input = true
+			character_array = db.execute("SELECT * FROM save_character WHERE id='#{answer.to_i}'")
+		    character_stats = character_array[0] 
+		    character_stats.shift
+		    character_spellbook = character_stats[1].split(", ")
+		    character_stats[1] = character_spellbook
+		    return character_stats
+		end
+	end
+end
+
 
 
 def create_character
@@ -776,9 +817,6 @@ end
 
 
 
-def load_character(current_character)
-	puts "load character"
-end
 
 def tower(current_character)
 	puts "\nStumbling through the endless vines and treacherous bogs of the Tanglewood" +
