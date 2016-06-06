@@ -348,20 +348,6 @@ class Character
 		valid_input = false
 		until valid_input == true
 
-			
-			# @master_spellbook.each_key do |spell|
-			# 	if @character_spellbook[spell] != nil
-			# 		@master_spellbook[spell][6] = true
-			# 	else
-			# 	end
-			# end
-			
-			# unlearnt_spells_array = []
-			
-			# unlearnt_spell_hash.each_key do |spell_name|
-			# 	unlearnt_spells_array << spell_name
-			# end
-
 			puts "\n**Available Spells**\n"
 			@unlearned_spells.each do |spell_name|
 				spell_stats = @master_spellbook[spell_name]
@@ -395,13 +381,26 @@ class Character
 		end
 	end
 
-	# -Master spellbook with each spell:
-	# 	-Name
-	# 	-Description
-	# 	-Flavor text
-	# 	-Attack value
-	# 	-Heal Value
-	# 	-Price
+def save_character
+
+	db = SQLite3::Database.new("mouse_quest_save_data.db")
+	db.results_as_hash = true
+
+	create_table_cmd = <<-SQL
+	CREATE TABLE IF NOT EXISTS save_character(
+	  id INTEGER PRIMARY KEY,
+	  name VARCHAR(100),
+	  character_spellbook VARCHAR(500),
+	  level INTEGER,
+	  treasure INTEGER,
+	  xp INTEGER
+	)
+	SQL
+	db.execute(create_table_cmd)
+	db.execute("INSERT INTO save_character(name, character_spellbook, level, treasure, xp) VALUES (?, ?, ?, ?, ?)", [@name, @character_spellbook.to_s, @level, @treasure, @xp]) 
+	puts "Your character #{@name} has been saved."
+end
+
 end
 
 class Monster
@@ -474,6 +473,21 @@ def create_character
 	character_stats
 end
 
+def continue(current_character)
+	valid_input = false
+	until valid_input == true
+		puts "\nWould you like to continue your adventure? [Y]es or [N]o?"
+    	choice = gets.chomp
+    	if choice.downcase == "n"
+			puts "\nGoodbye #{current_character.name}! You were a brave and valiant mouse.\n"
+			exit
+		elsif choice.downcase == "y"
+			puts "\nExcellent! On to the adventure!!!"
+		else 
+			puts "\nI'm sorry, I didn't understand that."
+    	end
+    end
+end
 
 
 def cheesewright_inn(current_character)
@@ -489,7 +503,8 @@ def cheesewright_inn(current_character)
     	if answer.downcase == "r"
     		puts "\n'Well now, help yourself to one of the beds upstairs. I'm sure you'll \n" +
     		     "feel better once you've slept a bit.'"
-    		save_character(current_character)
+    		current_character.save_character
+    		continue(current_character)
     		puts "\nAfter a short rest, you feel fit as a fiddle. Sam is delighted to see \n" +
     		     "you as you walk back down to the Common Room. 'Ah, #{current_character.name}!' \n" +
     		     "Sam beams at you, 'You look ten times the mouse you did before.'\n" 
@@ -732,9 +747,10 @@ def forest_map(current_character)
 	else
 		map_array[(y_axis + 3) * -1].to_a[(x_axis + 2)] = "X"
 
-		puts "\nMAP OF THE FOREST\n"
-		map_array.each {|location| puts location.join(" ") }
-		puts "\n[X] Your current location" +
+		puts "\nMAP OF THE FOREST" +
+		     "\n================="
+		map_array.each {|location| puts location.join("   ") }
+		puts "\nX. Your current location" +
 			 "\n1. The Cheesewright Inn" +
 		     "\n2. Madame Squeekendorf's House of Wonders" +
 		     "\n3. The Peddler's Wagon" +
@@ -746,6 +762,9 @@ def forest_map(current_character)
 end
 # *** Save Method ***
 	
+
+
+#   (name, character_spellbook, level, treasure, xp)
 # 	-Query SQLite and push Current Character attributes to Saved Character Database 
 # 	 with matching name
 # 	-Query SQLite and push Character Spellbook attributes to Spellbook Database with 
@@ -755,10 +774,7 @@ end
 # 		luck on their quest. Run the Action Method 
 # 		-ELSE, PUTS a goodbye message and end program
 
-def save_character(current_character)
 
-	puts "I'm saving"
-end
 
 def load_character(current_character)
 	puts "load character"
@@ -829,6 +845,10 @@ end
 # puts "the treasure is #{black_adder.treasure}"
 # puts "the xp is #{black_adder.xp}"
 # puts "the attack value is #{black_adder.attack_value}"
+
+
+
+
 
 create_or_load = intro
 	if create_or_load == "create_character"
